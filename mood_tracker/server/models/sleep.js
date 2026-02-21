@@ -7,7 +7,6 @@ const SleepSchema = new mongoose.Schema({
   quality: { type: String, enum: ['good', 'fair', 'bad'] }
 });
 
-// Робимо так, щоб користувач міг додати лише один запис сну на одну дату
 SleepSchema.index({ user: 1, date: 1 }, { unique: true });
 
 module.exports = mongoose.model('Sleep', SleepSchema);

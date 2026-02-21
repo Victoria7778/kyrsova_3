@@ -10,7 +10,6 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Відправка даних на ваш бекенд
       await axios.post('http://localhost:5000/api/auth/register', { email, password });
       alert('Реєстрація успішна!');
       navigate('/login');

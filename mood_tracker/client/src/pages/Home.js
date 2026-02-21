@@ -7,7 +7,6 @@ const Home = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
   const [userEmail, setUserEmail] = useState(localStorage.getItem('userEmail') || '');
   
-  // Стани для модальних вікон
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [sleepHours, setSleepHours] = useState('');
 

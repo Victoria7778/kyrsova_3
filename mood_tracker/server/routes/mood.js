@@ -1,33 +1,62 @@
 const express = require('express');
 const router = express.Router();
 const Mood = require('../models/Mood');
-const jwt = require('jsonwebtoken');
+const Sleep = require('../models/sleep'); 
+const auth = require('../middleware/auth');
 
-// Middleware для перевірки, чи залогінений користувач
-const auth = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'Авторизація відхилена' });
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // Додаємо id користувача до запиту
-    next();
-  } catch (err) {
-    res.status(401).json({ message: 'Токен невалідний' });
-  }
-};
-
-// POST: Додати новий запис настрою
 router.post('/add', auth, async (req, res) => {
   try {
+    const { moodScore, feelingType, comment } = req.body;
+    
     const newMood = new Mood({
-      ...req.body,
-      user: req.user.id // Прив'язуємо запис до конкретного користувача
+      user: req.user.id,
+      moodScore,
+      feelingType,
+      comment
     });
-    await newMood.save();
-    res.status(201).json({ message: 'Запис успішно створено!' });
+
+    const mood = await newMood.save();
+    res.json(mood);
   } catch (err) {
-    res.status(500).json({ message: 'Помилка сервера при збереженні' });
+    console.error(err.message);
+    res.status(500).send('Помилка при збереженні настрою');
+  }
+});
+
+router.get('/all', auth, async (req, res) => {
+  try {
+    const moods = await Mood.find({ user: req.user.id }).sort({ date: -1 });
+    res.json(moods);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Помилка сервера при отриманні настрою');
+  }
+});
+
+router.post('/sleep', auth, async (req, res) => {
+  try {
+    const { date, hours, quality } = req.body; 
+    const sleep = await Sleep.findOneAndUpdate(
+      { user: req.user.id, date: date },
+      { hours, quality },
+      { new: true, upsert: true }
+    );
+
+    res.json(sleep);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Помилка при збереженні сну');
+  }
+});
+
+router.get('/sleep/all', auth, async (req, res) => {
+  try {
+    const sleepRecords = await Sleep.find({ user: req.user.id }).sort({ date: -1 });
+    res.json(sleepRecords);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Помилка сервера при отриманні історії сну');
   }
 });
 

@@ -4,10 +4,15 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+const authRoutes = require('./routes/auth');
 
-// Middleware
+// --- СПОЧАТКУ MIDDLEWARE ---
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // Тепер сервер спочатку парсить JSON, а потім віддає його маршрутам
+
+// --- ПОТІМ МАРШРУТИ ---
+app.use('/api/auth', authRoutes);
+app.use('/api/mood', require('./routes/mood'));
 
 // З'єднання з MongoDB
 const uri = process.env.MONGODB_URI;

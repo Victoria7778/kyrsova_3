@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
+
+import AppLayout from './components/AppLayout';
+
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -9,49 +11,15 @@ import Settings from './pages/Settings';
 import History from './pages/History';
 import Statistics from './pages/Statistics'; 
 
-const AppLayout = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('token'));
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setToken(localStorage.getItem('token'));
-    };
-    window.addEventListener('storage', handleStorageChange);
-    const interval = setInterval(handleStorageChange, 500);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
-  }, []);
-
-  if (!token) {
-    return <div style={{ width: '100%', minHeight: '100vh' }}>{children}</div>;
-  }
-
-  return (
-    <div style={{ display: 'flex' }}>
-      <Sidebar />
-      <div style={{ 
-        marginLeft: '240px', 
-        width: 'calc(100% - 240px)', 
-        minHeight: '100vh', 
-        backgroundColor: '#f8f9fa' 
-      }}>
-        {children}
-      </div>
-    </div>
-  );
-};
-
 function App() {
   return (
     <Router>
       <AppLayout>
         <Routes>
-          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
+          <Route path="/" element={<Home />} />
           <Route path="/add-mood" element={<MoodEntry />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/history" element={<History />} />

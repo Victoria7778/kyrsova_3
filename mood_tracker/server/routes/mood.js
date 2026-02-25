@@ -4,6 +4,7 @@ const Mood = require('../models/Mood');
 const Sleep = require('../models/sleep'); 
 const auth = require('../middleware/auth');
 const Event = require('../models/Event');
+const PhysicalState = require('../models/PhysicalState');
 
 router.post('/add', auth, async (req, res) => {
   try {
@@ -114,6 +115,34 @@ router.get('/stats', auth, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ message: "Помилка сервера при розрахунку статистики" });
+  }
+});
+
+
+// @route   GET api/mood/physical/all
+// @desc    Отримати всю історію фізичних станів
+router.get('/physical/all', auth, async (req, res) => {
+  try {
+    const states = await PhysicalState.find({ user: req.user.id }).sort({ date: -1 });
+    res.json(states);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Помилка сервера при отриманні фізичного стану');
+  }
+});
+
+
+router.post('/physical', auth, async (req, res) => {
+  try {
+    const newState = new PhysicalState({
+      ...req.body,
+      user: req.user.id
+    });
+    await newState.save();
+    res.json(newState);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Помилка сервера при збереженні');
   }
 });
 module.exports = router;

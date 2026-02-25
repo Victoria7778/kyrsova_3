@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { LayoutDashboard, BarChart3, History, Settings, LogOut } from 'lucide-react';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -9,94 +10,112 @@ const Sidebar = () => {
     if (window.confirm("Ви впевнені, що хочете вийти?")) {
       localStorage.clear();
       navigate('/login');
-      window.location.reload(); // Щоб скинути всі стейти додатка
     }
   };
 
   const menuItems = [
-    { name: 'Головна', path: '/', icon: '🏠' },
-    { name: 'Мій стан', path: '/add-mood', icon: '🎭' },
-    { name: 'Статистика', path: '/stats', icon: '📊' },
-    { name: 'Історія', path: '/history', icon: '📅' },
-    { name: 'Налаштування', path: '/settings', icon: '⚙️' },
+    { name: 'Головна', path: '/', icon: <LayoutDashboard size={20} /> },
+    { name: 'Статистика', path: '/stats', icon: <BarChart3 size={20} /> },
+    { name: 'Історія', path: '/history', icon: <History size={20} /> },
+    { name: 'Налаштування', path: '/settings', icon: <Settings size={20} /> },
   ];
 
   return (
-    <div style={styles.sidebar}>
-      <h2 style={styles.logo}>Moodly</h2>
-      
-      <nav style={styles.nav}>
-        {menuItems.map((item) => (
-          <button
-            key={item.path}
-            onClick={() => navigate(item.path)}
-            style={{
-              ...styles.navBtn,
-              backgroundColor: location.pathname === item.path ? '#e1ecf8' : 'transparent',
-              color: location.pathname === item.path ? '#4a90e2' : '#5f6c7b',
-            }}
-          >
-            <span style={{ marginRight: '10px' }}>{item.icon}</span>
-            {item.name}
-          </button>
-        ))}
-      </nav>
+    <aside style={styles.sidebar}>
+      <div>
+        <h2 style={styles.logo}>Moodly</h2>
 
-      {/* Кнопка виходу внизу */}
+        <nav style={styles.nav}>
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+
+            return (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                style={{
+                  ...styles.navBtn,
+                  ...(isActive && styles.activeBtn),
+                }}
+              >
+                <span style={styles.icon}>
+                  {item.icon}
+                </span>
+                {item.name}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
       <div style={styles.footer}>
         <button onClick={handleLogout} style={styles.logoutBtn}>
-          <span style={{ marginRight: '10px' }}></span> Вийти
+          <LogOut size={18} style={{ marginRight: '10px' }} />
+          Вийти
         </button>
       </div>
-    </div>
+    </aside>
   );
 };
 
 const styles = {
   sidebar: {
     width: '240px',
-    height: '100vh',
     backgroundColor: '#fff',
-    borderRight: '1px solid #eee',
-    position: 'fixed',
-    left: 0,
-    top: 0,
+    borderRight: '1px solid rgba(157, 141, 241, 0.1)',
     display: 'flex',
     flexDirection: 'column',
-    padding: '20px',
+    justifyContent: 'space-between',
+    padding: '30px 20px',
     boxSizing: 'border-box',
-    zIndex: 100,
+    boxShadow: '4px 0 20px rgba(157, 141, 241, 0.05)',
   },
+
   logo: {
     fontSize: '24px',
-    color: '#4a90e2',
+    color: 'var(--lavender-main)',
     marginBottom: '40px',
-    textAlign: 'center',
     fontWeight: '800',
+    letterSpacing: '-0.5px',
   },
+
   nav: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '10px',
-    flex: 1, // Займає весь доступний простір, штовхаючи футер вниз
+    gap: '8px',
   },
+
   navBtn: {
     display: 'flex',
     alignItems: 'center',
-    padding: '12px 15px',
+    padding: '12px 16px',
     border: 'none',
-    borderRadius: '10px',
+    borderRadius: '14px',
     cursor: 'pointer',
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: '600',
-    transition: '0.2s',
+    background: 'transparent',
+    color: '#5f6c7b',
+    transition: 'all 0.2s ease',
     textAlign: 'left',
   },
-  footer: {
-    marginTop: 'auto', // Притискає кнопку до низу
-    paddingTop: '20px',
-    borderTop: '1px solid #f1f5f9'
+
+  activeBtn: {
+    backgroundColor: '#f3f0ff',
+    color: 'var(--lavender-main)',
   },
+
+  icon: {
+    marginRight: '12px',
+    display: 'flex',
+    alignItems: 'center',
+  },
+
+  footer: {
+    borderTop: '1px solid #f1f5f9',
+    paddingTop: '20px',
+  },
+
   logoutBtn: {
     display: 'flex',
     alignItems: 'center',
@@ -105,9 +124,9 @@ const styles = {
     backgroundColor: '#fff5f5',
     color: '#ff4d4d',
     border: '1px solid #ffc1c1',
-    borderRadius: '10px',
+    borderRadius: '12px',
     cursor: 'pointer',
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: '600',
     transition: '0.2s',
   }

@@ -1,27 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import axios from 'axios';
+import { 
+  Activity, 
+  Moon, 
+  Calendar as CalendarIcon, 
+  HeartPulse, 
+  Clock,
+  ChevronRight 
+} from 'lucide-react';
 import 'react-calendar/dist/Calendar.css';
+import { sharedStyles } from '../styles/SharedStyles';
 
 const History = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [historyData, setHistoryData] = useState({ mood: [], sleep: [], events: [] });
+  const [historyData, setHistoryData] = useState({ mood: [], sleep: [], events: [], physical: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem('token');
       try {
-        const [moodRes, sleepRes, eventRes] = await Promise.all([
+        const [moodRes, sleepRes, eventRes, physRes] = await Promise.all([
           axios.get('http://localhost:5000/api/mood/all', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('http://localhost:5000/api/mood/sleep/all', { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get('http://localhost:5000/api/mood/events/all', { headers: { Authorization: `Bearer ${token}` } })
+          axios.get('http://localhost:5000/api/mood/events/all', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:5000/api/mood/physical/all', { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: [] })) 
         ]);
 
         setHistoryData({
           mood: moodRes.data,
           sleep: sleepRes.data,
-          events: eventRes.data 
+          events: eventRes.data,
+          physical: physRes.data 
         });
         setLoading(false);
       } catch (err) {
@@ -39,99 +50,109 @@ const History = () => {
 
   const tileContent = ({ date, view }) => {
     if (view !== 'month') return null;
-
     const currentTileDate = formatDate(date);
-    
-    const hasMood = historyData.mood.some(m => m.date && formatDate(m.date) === currentTileDate);
-    const hasSleep = historyData.sleep.some(s => s.date === currentTileDate);
-   
-    const hasEvent = historyData.events.some(e => e.date && formatDate(e.date) === currentTileDate);
+    const hasData = [
+      historyData.mood.some(m => m.date && formatDate(m.date) === currentTileDate),
+      historyData.sleep.some(s => s.date === currentTileDate),
+      historyData.events.some(e => e.date && formatDate(e.date) === currentTileDate),
+      historyData.physical.some(p => p.date && formatDate(p.date) === currentTileDate)
+    ].some(Boolean);
 
-    return (
-      <div style={styles.tileIcons}>
-        {hasMood && <span title="Настрій">🎭</span>}
-        {hasSleep && <span title="Сон">🛌</span>}
-        {hasEvent && <span title="Подія">📝</span>}
-      </div>
-    );
+    return hasData ? <div style={sharedStyles.tileDot} /> : null;
   };
 
   const selectedDateStr = formatDate(selectedDate);
   const dailyMoods = historyData.mood.filter(m => formatDate(m.date) === selectedDateStr);
   const dailySleep = historyData.sleep.find(s => s.date === selectedDateStr);
-
   const dailyEvents = historyData.events.filter(e => formatDate(e.date) === selectedDateStr);
+  const dailyPhys = historyData.physical.filter(p => formatDate(p.date) === selectedDateStr);
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Історія активності 📅</h1>
-      
-      <div style={styles.contentLayout}>
-        <div style={styles.calendarSection}>
-          <Calendar 
-            onChange={setSelectedDate} 
-            value={selectedDate} 
-            tileContent={tileContent}
-            locale="uk-UA"
-          />
+    <div style={sharedStyles.container}>
+      <header style={sharedStyles.header}>
+        <h1 style={sharedStyles.title}>Історія активності 🗓️</h1>
+        <p style={sharedStyles.subtitle}>
+          {selectedDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </p>
+      </header>
+
+      <div style={sharedStyles.contentLayout}>
+        
+        <div style={{ width: '100%' }}>
+          <div className="glass-card" style={sharedStyles.calendarCard}>
+            <Calendar 
+              onChange={setSelectedDate} 
+              value={selectedDate} 
+              tileContent={tileContent} 
+              locale="uk-UA" 
+            />
+          </div>
         </div>
 
-        <div style={styles.detailsSection}>
-          <h3 style={styles.detailsTitle}>Деталі за {selectedDate.toLocaleDateString('uk-UA')}</h3>
+        <div style={{ width: '100%' }}>
+          <div className="glass-card" style={sharedStyles.physCard}>
+            <div style={sharedStyles.sectionHeader}>
+              <HeartPulse size={20} color="#ff7eb3" />
+              <h3 style={sharedStyles.sectionTitle}>Фізичний стан</h3>
+            </div>
+            {dailyPhys.length > 0 ? dailyPhys.map((p, i) => (
+              <div key={i} style={sharedStyles.physEntry}>
+                <p style={sharedStyles.energyText}>Енергія: <strong>{p.energyLevel}/10</strong></p>
+                <div style={sharedStyles.tagWrapper}>
+                  {p.symptoms?.map((s, idx) => (
+                    <span key={idx} style={sharedStyles.symptomTag}>{s}</span>
+                  ))}
+                </div>
+              </div>
+            )) : <p style={sharedStyles.emptyText}>Записів немає</p>}
+          </div>
+        </div>
+
+        {/* КОЛОНКА 3: АКТИВНІСТЬ */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '100%' }}>
           
-          <div style={styles.detailBlock}>
-            <strong>🛌 Сон:</strong> {dailySleep ? `${dailySleep.hours} год. (якість: ${dailySleep.quality})` : 'Записів немає'}
+          {/* Сон */}
+          <div className="glass-card" style={sharedStyles.actionCard}>
+            <div style={sharedStyles.cardTop}>
+              <div style={sharedStyles.cardLabel}><Moon size={16} color="#b8aff5" /> Сон</div>
+            </div>
+            {dailySleep ? (
+              <p style={sharedStyles.cardValue}><strong>{dailySleep.hours}г</strong> <small>(якість: {dailySleep.quality})</small></p>
+            ) : <p style={sharedStyles.emptyText}>Не вказано</p>}
           </div>
 
-          <div style={styles.detailBlock}>
-            <strong>📝 Події:</strong>
-            {dailyEvents.length > 0 ? (
-              dailyEvents.map((e, index) => (
-                <div key={index} style={styles.eventItem}>
-                  <span style={styles.categoryBadge}>{e.category}</span>
-                  <span style={styles.eventTitle}>{e.title}</span>
-                </div>
-              ))
-            ) : <p>Подій не записано</p>}
-          </div>
+          {/* Події */}
+          {dailyEvents.length > 0 ? dailyEvents.map((e, i) => (
+            <div key={i} className="glass-card" style={sharedStyles.actionCard}>
+              <div style={sharedStyles.cardTop}>
+                <div style={sharedStyles.cardLabel}><CalendarIcon size={16} color="#ff9f43" /> Подія</div>
+                <ChevronRight size={14} color="#bdc3c7" />
+              </div>
+              <p style={sharedStyles.cardValue}>{e.title}</p>
+              <span style={{ fontSize: '10px', color: '#ff9f43', fontWeight: '800' }}>{e.category}</span>
+            </div>
+          )) : (
+            <div className="glass-card" style={sharedStyles.actionCard}>
+               <div style={sharedStyles.cardTop}><CalendarIcon size={16} color="#bdc3c7" /><span style={sharedStyles.cardLabel}>Події</span></div>
+               <p style={sharedStyles.emptyText}>Подій не було</p>
+            </div>
+          )}
 
-          <div style={styles.detailBlock}>
-            <strong>🎭 Настрій протягом дня:</strong>
-            {dailyMoods.length > 0 ? (
-              dailyMoods.map((m, index) => (
-                <div key={index} style={styles.moodItem}>
-                  <span style={styles.moodScore}>{m.moodScore}/10</span> 
-                  <span style={styles.moodType}>{m.feelingType}</span>
-                  {m.comment && <p style={styles.moodComment}>"{m.comment}"</p>}
-                  <small style={styles.timeLabel}>{new Date(m.date).toLocaleTimeString('uk-UA', {hour: '2-digit', minute:'2-digit'})}</small>
-                </div>
-              ))
-            ) : <p>Записів настрою немає</p>}
-          </div>
+          {/* Настрій */}
+          {dailyMoods.length > 0 ? dailyMoods.map((m, i) => (
+            <div key={i} className="glass-card" style={sharedStyles.actionCard}>
+              <div style={sharedStyles.cardTop}>
+                <div style={sharedStyles.cardLabel}><Activity size={16} color="#9d8df1" /> Настрій</div>
+                <span style={sharedStyles.timeLabel}><Clock size={12}/> {new Date(m.date).toLocaleTimeString('uk-UA', {hour:'2-digit', minute:'2-digit'})}</span>
+              </div>
+              <p style={sharedStyles.cardValue}><strong>{m.moodScore}/10</strong> — {m.feelingType}</p>
+              {m.comment && <p style={sharedStyles.commentText}>"{m.comment}"</p>}
+            </div>
+          )) : null}
         </div>
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: { padding: '30px', maxWidth: '1100px', fontFamily: 'Arial, sans-serif' },
-  title: { color: '#2c3e50', marginBottom: '25px', fontWeight: '800' },
-  contentLayout: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', alignItems: 'start' },
-  calendarSection: { backgroundColor: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' },
-  tileIcons: { display: 'flex', justifyContent: 'center', gap: '2px', fontSize: '12px', marginTop: '5px' },
-  detailsSection: { backgroundColor: 'white', padding: '25px', borderRadius: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', minHeight: '300px' },
-  detailsTitle: { marginTop: 0, borderBottom: '2px solid #f1f5f9', paddingBottom: '10px', color: '#34495e' },
-  detailBlock: { marginBottom: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '12px' },
-  moodItem: { padding: '10px 0', borderBottom: '1px solid #eee' },
-  moodScore: { fontWeight: 'bold', color: '#4a90e2', marginRight: '10px' },
-  moodType: { textTransform: 'capitalize', color: '#2c3e50' },
-  moodComment: { fontStyle: 'italic', color: '#636e72', margin: '5px 0' },
-  timeLabel: { color: '#b2bec3' },
-
-  eventItem: { display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' },
-  categoryBadge: { backgroundColor: '#ffeaa7', padding: '2px 8px', borderRadius: '5px', fontSize: '12px', color: '#d35400', fontWeight: 'bold' },
-  eventTitle: { color: '#2d3436' }
 };
 
 export default History;

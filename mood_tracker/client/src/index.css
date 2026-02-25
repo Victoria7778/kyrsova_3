@@ -1,13 +1,44 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:root {
+  --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e7ff 100%);
+  --lavender-main: #9d8df1;
+  --lavender-soft: #b8aff5;
+  --glass-white: rgba(255, 255, 255, 0.85);
+  --text-dark: #4a4e69;
+  --text-muted: #9a9db3;
+  --soft-shadow: 0 8px 30px rgba(157, 141, 241, 0.15);
+  --radius-xl: 30px;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  background: var(--bg-gradient);
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-dark);
+}
+
+.glass-card {
+  background: var(--glass-white);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--soft-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  padding: 25px;
+  transition: all 0.3s ease;
+}
+
+.primary-button {
+  background: linear-gradient(90deg, #9d8df1 0%, #b8aff5 100%);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 15px 30px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(157, 141, 241, 0.3);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.primary-button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(157, 141, 241, 0.4);
 }

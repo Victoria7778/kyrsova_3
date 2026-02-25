@@ -6,15 +6,15 @@ require('dotenv').config();
 const app = express();
 const authRoutes = require('./routes/auth');
 
-// --- СПОЧАТКУ MIDDLEWARE ---
-app.use(cors());
-app.use(express.json()); // Тепер сервер спочатку парсить JSON, а потім віддає його маршрутам
 
-// --- ПОТІМ МАРШРУТИ ---
+app.use(cors());
+app.use(express.json()); 
+
+
 app.use('/api/auth', authRoutes);
 app.use('/api/mood', require('./routes/mood'));
 
-// З'єднання з MongoDB
+
 const uri = process.env.MONGODB_URI;
 mongoose.connect(uri)
   .then(() => console.log("✅ Успішно підключено до MongoDB Atlas"))

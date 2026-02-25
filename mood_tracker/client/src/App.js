@@ -7,20 +7,16 @@ import Register from './pages/Register';
 import MoodEntry from './pages/MoodEntry';
 import Settings from './pages/Settings';
 import History from './pages/History';
-
+import Statistics from './pages/Statistics'; 
 
 const AppLayout = ({ children }) => {
-  // Використовуємо стан для токена
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  // Слухаємо зміни в localStorage (це спрацює при логіні/логауті)
   useEffect(() => {
     const handleStorageChange = () => {
       setToken(localStorage.getItem('token'));
     };
     window.addEventListener('storage', handleStorageChange);
-    
-    // Перевіряємо токен кожні 500мс (простий хак для миттєвого оновлення)
     const interval = setInterval(handleStorageChange, 500);
 
     return () => {
@@ -59,6 +55,7 @@ function App() {
           <Route path="/add-mood" element={<MoodEntry />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/history" element={<History />} />
+          <Route path="/stats" element={<Statistics />} /> 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AppLayout>

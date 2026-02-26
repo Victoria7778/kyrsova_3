@@ -25,11 +25,22 @@ const Login = () => {
     try {
       const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
       
+ 
       localStorage.setItem('token', res.data.token);
-      localStorage.setItem('userEmail', email);
-      
-      navigate('/'); 
-      window.location.reload(); // Щоб AppLayout миттєво побачив токен
+      localStorage.setItem('userEmail', res.data.user.email);
+      localStorage.setItem('userRole', res.data.user.role); 
+      localStorage.setItem('userName', res.data.user.name);
+
+      window.dispatchEvent(new Event('storage'));
+
+      if (res.data.user.role === 'admin') {
+        navigate('/admin');
+      } else if (res.data.user.role === 'psychologist') {
+        navigate('/patients');
+      } else {
+        navigate('/');
+      }
+
     } catch (err) {
       alert(err.response?.data?.message || 'Помилка при вході');
     }

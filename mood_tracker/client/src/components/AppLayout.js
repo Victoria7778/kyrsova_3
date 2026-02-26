@@ -2,23 +2,29 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 
 const AppLayout = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [authStatus, setAuthStatus] = useState({
+    token: localStorage.getItem('token'),
+    role: localStorage.getItem('userRole')
+  });
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      setToken(localStorage.getItem('token'));
+    const updateAuth = () => {
+      setAuthStatus({
+        token: localStorage.getItem('token'),
+        role: localStorage.getItem('userRole')
+      });
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    const interval = setInterval(handleStorageChange, 500); 
+    window.addEventListener('storage', updateAuth);
+    const interval = setInterval(updateAuth, 1000); 
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('storage', updateAuth);
       clearInterval(interval);
     };
   }, []);
 
-  if (!token) {
+  if (!authStatus.token) {
     return (
       <main style={{ width: '100%', minHeight: '100vh', backgroundColor: '#f8f9ff' }}>
         {children}
@@ -28,7 +34,7 @@ const AppLayout = ({ children }) => {
 
   return (
     <div style={layoutStyles.wrapper}>
-      <Sidebar />
+      <Sidebar userRole={authStatus.role} />
       <main style={layoutStyles.mainContent}>
         {children}
       </main>
@@ -37,18 +43,8 @@ const AppLayout = ({ children }) => {
 };
 
 const layoutStyles = {
-  wrapper: {
-    display: 'flex',
-    minHeight: '100vh',
-    backgroundColor: '#f8f9ff', 
-  },
-  mainContent: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    boxSizing: 'border-box',
-    overflowX: 'hidden', 
-  }
+  wrapper: { display: 'flex', minHeight: '100vh', backgroundColor: '#f8f9ff' },
+  mainContent: { flex: 1, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflowX: 'hidden' }
 };
 
 export default AppLayout;

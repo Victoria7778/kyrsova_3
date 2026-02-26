@@ -1,8 +1,20 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Box, 
+  Typography, 
+  Slider, 
+  TextField, 
+  Button, 
+  MenuItem, 
+  Stack,
+  FormControl,
+  InputLabel,
+  Select
+} from '@mui/material';
 
-const MoodEntry = () => {
+const MoodEntry = ({ onSuccess }) => {
   const [moodScore, setMoodScore] = useState(5);
   const [feelingType, setFeelingType] = useState('спокій');
   const [comment, setComment] = useState('');
@@ -22,45 +34,106 @@ const MoodEntry = () => {
       await axios.post('http://localhost:5000/api/mood/add', data, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert('Настрій зафіксовано!');
-      navigate('/');
+      
+      if (onSuccess) {
+        onSuccess(); // Закриваємо модалку, якщо компонент всередині неї
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       alert(err.response?.data?.message || 'Помилка при збереженні');
     }
   };
 
   return (
-    <div style={{ padding: '40px', maxWidth: '500px', margin: 'auto', backgroundColor: '#fff', borderRadius: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
-      <h2 style={{ textAlign: 'center', color: '#2c3e50' }}>Як ви почуваєтесь зараз?</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '30px', textAlign: 'center' }}>
-          <label style={{ display: 'block', marginBottom: '10px', fontWeight: '600' }}>Оцінка: {moodScore}/10</label>
-          <input type="range" min="1" max="10" value={moodScore} 
-                 onChange={(e) => setMoodScore(e.target.value)} 
-                 style={{ width: '100%', cursor: 'pointer' }} />
-        </div>
+    <Box sx={{ width: '100%', maxWidth: 500, mx: 'auto' }}>
+      <Typography variant="h5" sx={{ textAlign: 'center', mb: 4, fontWeight: 500, color: '#2c3e50' }}>
+        Як ви почуваєтесь зараз?
+      </Typography>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>Ваш стан:</label>
-          <select value={feelingType} onChange={(e) => setFeelingType(e.target.value)} 
-                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd' }}>
-            <option value="спокій">Спокій 🧘</option>
-            <option value="піднесено">Піднесено ✨</option>
-            <option value="стрес">Стрес 🔥</option>
-            <option value="заплутаність">Заплутаність 🤔</option>
-            <option value="втома">Втома 😴</option>
-          </select>
-        </div>
+      <Box component="form" onSubmit={handleSubmit}>
+        <Stack spacing={4}>
+          {/* Слайдер оцінки настрою */}
+          <Box>
+            <Typography variant="body2" sx={{ mb: 2, color: '#95a5a6', textAlign: 'center' }}>
+              Оцінка стану: {moodScore} з 10
+            </Typography>
+            <Slider
+              value={moodScore}
+              min={1}
+              max={10}
+              step={1}
+              onChange={(e, newValue) => setMoodScore(newValue)}
+              sx={{ 
+                color: '#9d8df1',
+                height: 8,
+                '& .MuiSlider-thumb': {
+                  width: 24,
+                  height: 24,
+                  backgroundColor: '#fff',
+                  border: '2px solid currentColor',
+                  '&:focus, &:hover, &.Mui-active, &.Mui-focusVisible': {
+                    boxShadow: 'inherit',
+                  },
+                },
+              }}
+            />
+          </Box>
 
-        <textarea placeholder="Що на думці? (необов'язково)" 
-                  value={comment} onChange={(e) => setComment(e.target.value)}
-                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', minHeight: '100px', marginBottom: '20px', boxSizing: 'border-box' }} />
+          {/* Вибір типу відчуття */}
+          <FormControl fullWidth>
+            <InputLabel id="feeling-label">Ваш стан</InputLabel>
+            <Select
+              labelId="feeling-label"
+              value={feelingType}
+              label="Ваш стан"
+              onChange={(e) => setFeelingType(e.target.value)}
+              sx={{ borderRadius: '16px' }}
+            >
+              <MenuItem value="спокій">Спокій</MenuItem>
+              <MenuItem value="піднесено">Піднесено</MenuItem>
+              <MenuItem value="стрес">Стрес</MenuItem>
+              <MenuItem value="заплутаність">Заплутаність</MenuItem>
+              <MenuItem value="втома">Втома</MenuItem>
+            </Select>
+          </FormControl>
 
-        <button type="submit" style={{ width: '100%', padding: '15px', backgroundColor: '#4a90e2', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}>
-          Зберегти настрій
-        </button>
-      </form>
-    </div>
+          {/* Коментар */}
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            placeholder="Що на думці?"
+            label="Коментар"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '16px' } }}
+          />
+
+          {/* Кнопка збереження */}
+          <Button 
+            type="submit" 
+            fullWidth 
+            variant="contained" 
+            sx={{ 
+              py: 2, 
+              borderRadius: '16px', 
+              bgcolor: '#9d8df1',
+              textTransform: 'none',
+              fontSize: '1rem',
+              fontWeight: 500,
+              boxShadow: '0 10px 25px rgba(157, 141, 241, 0.3)',
+              '&:hover': { 
+                bgcolor: '#8a7ae0',
+                boxShadow: '0 12px 30px rgba(157, 141, 241, 0.4)'
+              }
+            }}
+          >
+            Зберегти настрій
+          </Button>
+        </Stack>
+      </Box>
+    </Box>
   );
 };
 

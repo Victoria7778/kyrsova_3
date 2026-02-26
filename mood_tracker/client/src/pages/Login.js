@@ -1,6 +1,19 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Box, 
+  Container, 
+  Typography, 
+  TextField, 
+  Button, 
+  Card, 
+  CardContent, 
+  Stack, 
+  Link,
+  Avatar
+} from '@mui/material';
+import { LogIn } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,76 +29,114 @@ const Login = () => {
       localStorage.setItem('userEmail', email);
       
       navigate('/'); 
+      window.location.reload(); // Щоб AppLayout миттєво побачив токен
     } catch (err) {
       alert(err.response?.data?.message || 'Помилка при вході');
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>З поверненням! 👋</h2>
-        <p style={styles.subtitle}>Увійдіть у свій акаунт Mood Tracker</p>
-        
-        <form onSubmit={handleLogin} style={styles.form}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Електронна пошта</label>
-            <input 
-              type="email" 
-              placeholder="example@ukma.edu.ua" 
-              onChange={(e) => setEmail(e.target.value)} 
-              required 
-              style={styles.input}
-            />
-          </div>
-          
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Пароль</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
-              style={styles.input}
-            />
-          </div>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%)',
+      p: 2
+    }}>
+      <Container maxWidth="xs">
+        <Card sx={{ 
+          borderRadius: '32px', 
+          boxShadow: '0 20px 60px rgba(157, 141, 241, 0.15)',
+          border: '1px solid rgba(157, 141, 241, 0.1)',
+          overflow: 'visible'
+        }}>
+          <CardContent sx={{ p: { xs: 3, sm: 5 }, textAlign: 'center' }}>
+            <Avatar sx={{ 
+              bgcolor: '#9d8df1', 
+              width: 64, 
+              height: 64, 
+              mx: 'auto', 
+              mb: 3,
+              boxShadow: '0 8px 20px rgba(157, 141, 241, 0.3)'
+            }}>
+              <LogIn size={32} color="white" />
+            </Avatar>
 
-          <button type="submit" style={styles.button}>Увійти</button>
-        </form>
-        
-        <p style={styles.footerText}>
-          Ще не маєте акаунту? <span onClick={() => navigate('/register')} style={styles.link}>Зареєструватися</span>
-        </p>
-      </div>
-    </div>
+            <Typography variant="h4" sx={{ fontWeight: 500, color: '#2c3e50', mb: 1 }}>
+              З поверненням!
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#95a5a6', mb: 4, fontWeight: 300 }}>
+              Увійдіть у свій акаунт Mood Tracker
+            </Typography>
+            
+            <Box component="form" onSubmit={handleLogin}>
+              <Stack spacing={3}>
+                <TextField 
+                  fullWidth
+                  label="Електронна пошта"
+                  type="email"
+                  placeholder="example@ukma.edu.ua"
+                  variant="outlined"
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  InputProps={{ sx: { borderRadius: '16px' } }}
+                />
+                
+                <TextField 
+                  fullWidth
+                  label="Пароль"
+                  type="password"
+                  placeholder="••••••••"
+                  variant="outlined"
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  InputProps={{ sx: { borderRadius: '16px' } }}
+                />
+
+                <Button 
+                  type="submit" 
+                  fullWidth 
+                  variant="contained" 
+                  sx={{ 
+                    py: 2, 
+                    borderRadius: '16px', 
+                    bgcolor: '#9d8df1',
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    boxShadow: '0 10px 25px rgba(157, 141, 241, 0.4)',
+                    '&:hover': { 
+                      bgcolor: '#8a7ae0',
+                      boxShadow: '0 12px 30px rgba(157, 141, 241, 0.5)'
+                    }
+                  }}
+                >
+                  Увійти
+                </Button>
+              </Stack>
+            </Box>
+            
+            <Typography variant="body2" sx={{ mt: 4, color: '#95a5a6', fontWeight: 300 }}>
+              Ще не маєте акаунту?{' '}
+              <Link 
+                onClick={() => navigate('/register')} 
+                sx={{ 
+                  color: '#9d8df1', 
+                  cursor: 'pointer', 
+                  fontWeight: 500, 
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' }
+                }}
+              >
+                Зареєструватися
+              </Link>
+            </Typography>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
   );
-};
-
-const styles = {
-  container: {
-    height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
-  },
-  card: {
-    backgroundColor: '#fff', padding: '40px', borderRadius: '20px',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px', textAlign: 'center'
-  },
-  title: { fontSize: '28px', color: '#2d3436', marginBottom: '10px' },
-  subtitle: { color: '#636e72', marginBottom: '30px', fontSize: '14px' },
-  form: { textAlign: 'left' },
-  inputGroup: { marginBottom: '20px' },
-  label: { display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#2d3436' },
-  input: {
-    width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #dfe6e9',
-    fontSize: '16px', outline: 'none', transition: 'border-color 0.3s', boxSizing: 'border-box'
-  },
-  button: {
-    width: '100%', padding: '14px', borderRadius: '8px', border: 'none',
-    backgroundColor: '#4a90e2', color: '#fff', fontSize: '16px', fontWeight: 'bold',
-    cursor: 'pointer', transition: 'background 0.3s', marginTop: '10px'
-  },
-  footerText: { marginTop: '25px', fontSize: '14px', color: '#636e72' },
-  link: { color: '#4a90e2', cursor: 'pointer', fontWeight: 'bold' }
 };
 
 export default Login;

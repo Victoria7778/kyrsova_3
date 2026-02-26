@@ -2,18 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
-  Activity, 
-  Moon, 
-  Calendar, 
-  HeartPulse, 
-  LogOut, 
-  User, 
-  PlusCircle, 
-  ChevronRight 
+  Box, Typography, Grid, Card, CardContent, Button, 
+  Avatar, IconButton, Modal, TextField, Fade, Stack, MenuItem 
+} from '@mui/material';
+import { 
+  Activity, Moon, Calendar, HeartPulse, 
+  LogOut, PlusCircle, ChevronRight, User 
 } from 'lucide-react'; 
 import MoodForm from '../components/MoodForm';
 import PhysicalForm from '../components/PhysicalForm';
-import { sharedStyles } from '../styles/SharedStyles';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -23,20 +20,15 @@ const Home = () => {
   const [todaySleep, setTodaySleep] = useState(null);
   const [todayPhysical, setTodayPhysical] = useState(null);
 
-  const [showMoodModal, setShowMoodModal] = useState(false);
-  const [showSleepModal, setShowSleepModal] = useState(false);
-  const [showEventModal, setShowEventModal] = useState(false);
-  const [showPhysicalModal, setShowPhysicalModal] = useState(false);
-
+  const [modalType, setModalType] = useState(null); 
   const [sleepHours, setSleepHours] = useState('');
-  const [eventData, setEventData] = useState({ title: '', category: 'інше' });
+  const [eventData, setEventData] = useState({ title: '', category: 'навчання' });
 
   const getDisplayName = () => {
     const savedName = localStorage.getItem('userName');
     const userJson = JSON.parse(localStorage.getItem('user') || '{}');
     const email = localStorage.getItem('userEmail') || '';
-    const finalName = savedName || userJson.name || email.split('@')[0];
-    return finalName && finalName !== 'undefined' ? finalName : 'Користувач';
+    return savedName || userJson.name || email.split('@')[0] || 'Користувач';
   };
 
   const [displayName] = useState(getDisplayName());
@@ -46,7 +38,6 @@ const Home = () => {
     if (!token) return;
     try {
       const today = new Date().toISOString().split('T')[0];
-      
       const [moodRes, sleepRes, physRes] = await Promise.all([
         axios.get('http://localhost:5000/api/mood/all', { headers: { Authorization: `Bearer ${token}` } }),
         axios.get('http://localhost:5000/api/mood/sleep/all', { headers: { Authorization: `Bearer ${token}` } }),
@@ -57,7 +48,7 @@ const Home = () => {
       setTodaySleep(sleepRes.data.find(s => s.date.startsWith(today)));
       setTodayPhysical(physRes.data.find(p => p.date.startsWith(today)));
     } catch (err) {
-      console.error("Помилка завантаження даних сьогодні:", err);
+      console.error("Помилка завантаження даних:", err);
     }
   };
 
@@ -71,6 +62,7 @@ const Home = () => {
     window.location.reload();
   };
 
+  // Функція для запису сну
   const handleSleepSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
@@ -80,11 +72,28 @@ const Home = () => {
         { date: today, hours: sleepHours }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setShowSleepModal(false);
+      setModalType(null);
       setSleepHours('');
       fetchTodayData();
     } catch (err) {
       alert('Помилка при записі сну');
+    }
+  };
+
+  // Функція для додавання події
+  const handleEventSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    try {
+      await axios.post('http://localhost:5000/api/mood/event', 
+        eventData, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setModalType(null);
+      setEventData({ title: '', category: 'навчання' });
+      fetchTodayData();
+    } catch (err) {
+      alert('Помилка при додаванні події');
     }
   };
 
@@ -94,136 +103,195 @@ const Home = () => {
   }
 
   return (
-    <div style={sharedStyles.container}>
-      <header style={sharedStyles.header}>
-        <div style={localStyles.userInfo}>
-          <div style={localStyles.avatarCircle}><User size={24} color="white" /></div>
-          <div>
-            <h1 style={sharedStyles.title}>Вітаємо, {displayName}!</h1>
-            <p style={sharedStyles.subtitle}>
+    <Box sx={{ p: { xs: 2, md: 4 }, width: '100%', maxWidth: 1000, mx: 'auto', boxSizing: 'border-box' }}>
+      
+      {/* HEADER */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5 }}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Avatar sx={{ 
+            bgcolor: '#9d8df1', width: 56, height: 56, borderRadius: '18px',
+            boxShadow: '0 8px 20px rgba(157, 141, 241, 0.2)' 
+          }}>
+            <User size={28} color="white" />
+          </Avatar>
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: 500, color: '#2c3e50' }}>
+              Вітаємо, {displayName}!
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#95a5a6', textTransform: 'capitalize', fontWeight: 300 }}>
               {new Date().toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', weekday: 'short' })}
-            </p>
-          </div>
-        </div>
-        <button onClick={handleLogout} style={localStyles.logoutIconButton}>
-          <LogOut size={20} />
-        </button>
-      </header>
+            </Typography>
+          </Box>
+        </Stack>
+        <IconButton onClick={handleLogout} sx={{ bgcolor: 'white', p: 1.5, borderRadius: '15px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+          <LogOut size={20} color="#95a5a6" />
+        </IconButton>
+      </Box>
 
-      {/* КАРТКИ СТАТУСУ */}
-      <div style={localStyles.statusGrid}>
-        <div className="glass-card" style={sharedStyles.glassCard}>
-          <div style={localStyles.iconCircle('#9d8df1')}><Activity size={18} color="white" /></div>
-          <span style={sharedStyles.cardLabel}>Настрій</span>
-          <p style={localStyles.cardVal}>{todayMood ? `${todayMood.moodScore}/10` : '--'}</p>
-        </div>
-        <div className="glass-card" style={sharedStyles.glassCard}>
-          <div style={localStyles.iconCircle('#b8aff5')}><Moon size={18} color="white" /></div>
-          <span style={sharedStyles.cardLabel}>Сон</span>
-          <p style={localStyles.cardVal}>{todaySleep ? `${todaySleep.hours}г` : '--'}</p>
-        </div>
-        <div className="glass-card" style={sharedStyles.glassCard}>
-          <div style={localStyles.iconCircle('#ff7eb3')}><HeartPulse size={18} color="white" /></div>
-          <span style={sharedStyles.cardLabel}>Енергія</span>
-          <p style={localStyles.cardVal}>{todayPhysical ? `${todayPhysical.energyLevel}/10` : '--'}</p>
-        </div>
-      </div>
+      {/* 1. STATUS CARDS */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {[
+          { label: 'Настрій', val: todayMood ? `${todayMood.moodScore}/10` : '--', icon: <Activity size={20} />, col: '#9d8df1' },
+          { label: 'Сон', val: todaySleep ? `${todaySleep.hours}г` : '--', icon: <Moon size={20} />, col: '#b8aff5' },
+          { label: 'Енергія', val: todayPhysical ? `${todayPhysical.energyLevel}/10` : '--', icon: <HeartPulse size={20} />, col: '#ff7eb3' }
+        ].map((item, index) => (
+          <Grid item xs={12} sm={4} key={index}>
+            <Card sx={{ 
+              borderRadius: '24px', textAlign: 'center', 
+              boxShadow: '0 10px 30px rgba(157, 141, 241, 0.08)', 
+              border: '1px solid rgba(255,255,255,0.4)' 
+            }}>
+              <CardContent sx={{ py: 3 }}>
+                <Avatar sx={{ bgcolor: item.col, mx: 'auto', mb: 1.5, width: 44, height: 44, borderRadius: '12px' }}>
+                  {item.icon}
+                </Avatar>
+                <Typography variant="caption" sx={{ fontWeight: 400, color: '#b2bec3', textTransform: 'uppercase', letterSpacing: 1 }}>
+                  {item.label}
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 400, mt: 0.5, color: '#2c3e50' }}>{item.val}</Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
-      <div style={localStyles.actionSection}>
-        <button onClick={() => setShowMoodModal(true)} style={localStyles.mainActionGradient}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <div style={localStyles.whiteIconCircle}><PlusCircle size={30} color="#9d8df1" /></div>
-            <div style={{ textAlign: 'left' }}>
-              <h2 style={{ margin: 0, fontSize: '20px', color: 'white' }}>Як ти сьогодні?</h2>
-              <p style={{ margin: 0, opacity: 0.8, fontSize: '14px', color: 'white' }}>Додай новий запис у щоденник</p>
-            </div>
-          </div>
-          <ChevronRight size={24} color="white" />
-        </button>
+      {/* 2. BIG VIOLET BUTTON */}
+      <Box sx={{ mb: 4 }}>
+        <Button 
+          fullWidth
+          onClick={() => setModalType('mood')}
+          sx={{
+            p: 4, borderRadius: '24px', justifyContent: 'space-between',
+            background: 'linear-gradient(90deg, #9d8df1 0%, #b8aff5 100%)',
+            boxShadow: '0 15px 30px rgba(157, 141, 241, 0.3)',
+            color: 'white', textTransform: 'none',
+            '&:hover': { background: 'linear-gradient(90deg, #8a7ae0 0%, #a69ce6 100%)' }
+          }}
+        >
+          <Stack direction="row" spacing={3} alignItems="center">
+            <Avatar sx={{ bgcolor: 'white', width: 55, height: 55 }}>
+              <PlusCircle size={30} color="#9d8df1" />
+            </Avatar>
+            <Box sx={{ textAlign: 'left' }}>
+              <Typography variant="h6" sx={{ fontWeight: 400 }}>Як ти сьогодні?</Typography>
+              <Typography variant="body2" sx={{ opacity: 0.8, fontWeight: 300 }}>Додай новий запис у щоденник</Typography>
+            </Box>
+          </Stack>
+          <ChevronRight />
+        </Button>
+      </Box>
 
-        <div style={localStyles.secondaryGrid}>
-          <button onClick={() => setShowSleepModal(true)} style={localStyles.neomorphBtn}>
-            <Moon size={22} color="#9d8df1" />
-            <span>Сон</span>
-          </button>
-          <button onClick={() => setShowEventModal(true)} style={localStyles.neomorphBtn}>
-            <Calendar size={22} color="#9d8df1" />
-            <span>Подія</span>
-          </button>
-          <button onClick={() => setShowPhysicalModal(true)} style={localStyles.neomorphBtn}>
-            <HeartPulse size={22} color="#9d8df1" />
-            <span>Здоров'я</span>
-          </button>
-        </div>
-      </div>
+      {/* 3. LOWER ACTION BUTTONS */}
+      <Grid container spacing={3}>
+        {[
+          { label: 'Записати сон', icon: <Moon size={22} />, type: 'sleep', col: '#b8aff5' },
+          { label: 'Додати подію', icon: <Calendar size={22} />, type: 'event', col: '#ff9f43' },
+          { label: 'Стан здоров\'я', icon: <HeartPulse size={22} />, type: 'physical', col: '#ff7eb3' }
+        ].map((action, i) => (
+          <Grid item xs={12} sm={4} key={i}>
+            <Button
+              fullWidth
+              onClick={() => setModalType(action.type)}
+              sx={{
+                py: 3, borderRadius: '24px',
+                bgcolor: 'white', color: '#2c3e50', 
+                boxShadow: '0 10px 25px rgba(0,0,0,0.03)',
+                textTransform: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                border: '1px solid transparent',
+                '&:hover': { border: '1px solid #9d8df1', bgcolor: '#fbfaff' }
+              }}
+            >
+              <Box sx={{ color: action.col, display: 'flex' }}>{action.icon}</Box>
+              <Typography variant="body1" sx={{ fontWeight: 400 }}>{action.label}</Typography>
+            </Button>
+          </Grid>
+        ))}
+      </Grid>
 
-      {/* МОДАЛЬНІ ВІКНА */}
-      {(showMoodModal || showPhysicalModal || showSleepModal) && (
-        <div style={localStyles.modalOverlay}>
-           <div className="glass-card" style={localStyles.modalBox}>
-             <button 
-               onClick={() => {
-                 setShowMoodModal(false);
-                 setShowPhysicalModal(false);
-                 setShowSleepModal(false);
-               }} 
-               style={localStyles.closeModalBtn}
-             >✕</button>
-             
-             {showMoodModal && <MoodForm onSuccess={() => { setShowMoodModal(false); fetchTodayData(); }} />}
-             {showPhysicalModal && <PhysicalForm onSuccess={() => { setShowPhysicalModal(false); fetchTodayData(); }} />}
-             {showSleepModal && (
-               <>
-                <h3 style={{ color: '#9d8df1', textAlign: 'center', marginBottom: '20px' }}>Записати сон</h3>
-                <form onSubmit={handleSleepSubmit}>
-                  <input type="number" placeholder="Кількість годин" value={sleepHours}
-                    onChange={(e) => setSleepHours(e.target.value)} style={localStyles.modalInput} required />
-                  <div style={localStyles.modalActions}>
-                    <button type="button" onClick={() => setShowSleepModal(false)} style={localStyles.cancelBtn}>Назад</button>
-                    <button type="submit" style={localStyles.submitBtn}>Зберегти</button>
-                  </div>
-                </form>
-               </>
-             )}
-           </div>
-        </div>
-      )}
-    </div>
+      {/* UNIVERSAL MODAL */}
+      <Modal open={!!modalType} onClose={() => setModalType(null)} closeAfterTransition>
+        <Fade in={!!modalType}>
+          <Box sx={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: { xs: '90%', sm: 420 }, bgcolor: 'white', borderRadius: '28px',
+            boxShadow: 24, p: 4, outline: 'none'
+          }}>
+            <IconButton onClick={() => setModalType(null)} sx={{ position: 'absolute', right: 16, top: 16 }}>
+              <Typography variant="h6">✕</Typography>
+            </IconButton>
+
+            {/* Форма Настрою */}
+            {modalType === 'mood' && <MoodForm onSuccess={() => { setModalType(null); fetchTodayData(); }} />}
+            
+            {/* Форма Фізичного стану */}
+            {modalType === 'physical' && <PhysicalForm onSuccess={() => { setModalType(null); fetchTodayData(); }} />}
+
+            {/* Форма Сну */}
+            {modalType === 'sleep' && (
+              <Box component="form" onSubmit={handleSleepSubmit} sx={{ p: 1 }}>
+                <Typography variant="h6" sx={{ color: '#9d8df1', textAlign: 'center', mb: 3, fontWeight: 500 }}>
+                  Записати сон
+                </Typography>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Кількість годин"
+                  value={sleepHours}
+                  onChange={(e) => setSleepHours(e.target.value)}
+                  sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: '15px' } }}
+                  required
+                />
+                <Stack direction="row" spacing={2}>
+                  <Button fullWidth onClick={() => setModalType(null)} variant="outlined" sx={{ borderRadius: '12px' }}>
+                    Назад
+                  </Button>
+                  <Button fullWidth type="submit" variant="contained" sx={{ bgcolor: '#9d8df1', borderRadius: '12px', '&:hover': { bgcolor: '#8a7ae0' } }}>
+                    Зберегти
+                  </Button>
+                </Stack>
+              </Box>
+            )}
+
+            {/* Форма Події */}
+            {modalType === 'event' && (
+              <Box component="form" onSubmit={handleEventSubmit} sx={{ p: 1 }}>
+                <Typography variant="h6" sx={{ color: '#ff9f43', textAlign: 'center', mb: 3, fontWeight: 500 }}>
+                  Додати подію
+                </Typography>
+                <TextField
+                  fullWidth
+                  label="Назва події"
+                  value={eventData.title}
+                  onChange={(e) => setEventData({...eventData, title: e.target.value})}
+                  sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: '15px' } }}
+                  required
+                />
+                <TextField
+                  fullWidth
+                  select
+                  label="Категорія"
+                  value={eventData.category}
+                  onChange={(e) => setEventData({...eventData, category: e.target.value})}
+                  sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: '15px' } }}
+                >
+                  <MenuItem value="навчання">Навчання 📚</MenuItem>
+                  <MenuItem value="відпочинок">Відпочинок 🏝️</MenuItem>
+                  <MenuItem value="робота">Робота 💼</MenuItem>
+                  <MenuItem value="здоров'я">Здоров'я 🏥</MenuItem>
+                </TextField>
+                <Button fullWidth type="submit" variant="contained" sx={{ bgcolor: '#ff9f43', borderRadius: '12px', '&:hover': { bgcolor: '#e67e22' } }}>
+                  Додати подію
+                </Button>
+              </Box>
+            )}
+          </Box>
+        </Fade>
+      </Modal>
+    </Box>
   );
-};
-
-const localStyles = {
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '40px' },
-  userInfo: { display: 'flex', alignItems: 'center', gap: '15px' },
-  avatarCircle: { width: '50px', height: '50px', borderRadius: '18px', background: '#9d8df1', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 8px 20px rgba(157, 141, 241, 0.3)' },
-  logoutIconButton: { background: 'white', border: 'none', padding: '12px', borderRadius: '15px', cursor: 'pointer', color: '#b2bec3', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' },
-  
-  statusGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', width: '100%', marginBottom: '35px' },
-  iconCircle: (color) => ({ width: '36px', height: '36px', borderRadius: '10px', background: color, display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '5px' }),
-  cardVal: { fontSize: '24px', fontWeight: '800', color: '#2c3e50', margin: '5px 0 0 0' },
-
-  actionSection: { display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '800px' },
-  mainActionGradient: {
-    padding: '30px', border: 'none', borderRadius: '24px', cursor: 'pointer',
-    background: 'linear-gradient(90deg, #9d8df1 0%, #b8aff5 100%)',
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 15px 30px rgba(157, 141, 241, 0.3)'
-  },
-  whiteIconCircle: { width: '55px', height: '55px', borderRadius: '50%', background: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center' },
-  
-  secondaryGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' },
-  neomorphBtn: {
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '22px',
-    backgroundColor: 'white', border: 'none', borderRadius: '20px', 
-    boxShadow: '0 10px 25px rgba(0,0,0,0.03)', cursor: 'pointer', color: '#2c3e50', fontWeight: '700'
-  },
-
-  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(74, 78, 105, 0.2)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
-  modalBox: { width: '420px', position: 'relative', border: 'none', padding: '40px', background: 'white', borderRadius: '24px' },
-  closeModalBtn: { position: 'absolute', top: '20px', right: '20px', border: 'none', background: 'none', fontSize: '20px', cursor: 'pointer', color: '#bdc3c7' },
-  modalInput: { width: '100%', padding: '15px', marginBottom: '20px', borderRadius: '15px', border: '1px solid #edf0f7', backgroundColor: '#f9faff', fontSize: '16px', outline: 'none', boxSizing: 'border-box' },
-  modalActions: { display: 'flex', gap: '12px' },
-  cancelBtn: { flex: 1, padding: '12px', backgroundColor: '#f1f3f9', border: 'none', borderRadius: '12px', cursor: 'pointer', color: '#95a5a6', fontWeight: 'bold' },
-  submitBtn: { flex: 1, padding: '12px', backgroundColor: '#9d8df1', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }
 };
 
 export default Home;

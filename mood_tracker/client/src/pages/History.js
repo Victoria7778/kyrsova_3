@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import axios from 'axios';
 import { 
-  Activity, 
-  Moon, 
-  Calendar as CalendarIcon, 
-  HeartPulse, 
-  Clock,
-  ChevronRight 
+  Box, Container, Typography, Grid, Paper, Stack, Chip, 
+  CircularProgress, Avatar, Divider
+} from '@mui/material';
+import { 
+  Activity, Moon, Calendar as CalendarIcon, 
+  HeartPulse, Clock, Info, Zap
 } from 'lucide-react';
 import 'react-calendar/dist/Calendar.css';
-import { sharedStyles } from '../styles/SharedStyles';
 
 const History = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -57,8 +56,12 @@ const History = () => {
       historyData.events.some(e => e.date && formatDate(e.date) === currentTileDate),
       historyData.physical.some(p => p.date && formatDate(p.date) === currentTileDate)
     ].some(Boolean);
-
-    return hasData ? <div style={sharedStyles.tileDot} /> : null;
+    
+    return hasData ? (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: '2px' }}>
+        <Box sx={{ width: '4px', height: '4px', bgcolor: '#9d8df1', borderRadius: '50%' }} />
+      </Box>
+    ) : null;
   };
 
   const selectedDateStr = formatDate(selectedDate);
@@ -67,91 +70,164 @@ const History = () => {
   const dailyEvents = historyData.events.filter(e => formatDate(e.date) === selectedDateStr);
   const dailyPhys = historyData.physical.filter(p => formatDate(p.date) === selectedDateStr);
 
+  const columnScrollStyles = {
+    flex: 1, 
+    overflowY: 'auto', 
+    pr: 1,
+    '&::-webkit-scrollbar': { width: '5px' },
+    '&::-webkit-scrollbar-thumb': { bgcolor: '#f3f0ff', borderRadius: '10px' }
+  };
+
+  if (loading) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+      <CircularProgress sx={{ color: '#9d8df1' }} />
+    </Box>
+  );
+
   return (
-    <div style={sharedStyles.container}>
-      <header style={sharedStyles.header}>
-        <h1 style={sharedStyles.title}>Історія активності 🗓️</h1>
-        <p style={sharedStyles.subtitle}>
-          {selectedDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}
-        </p>
-      </header>
+    <Container maxWidth={false} sx={{ py: 3, height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* HEADER */}
+      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 500, color: '#2c3e50' }}>Мій щоденник</Typography>
+        <Chip 
+          label={selectedDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' })} 
+          sx={{ bgcolor: '#f3f0ff', color: '#9d8df1', fontWeight: 500 }} 
+        />
+      </Stack>
 
-      <div style={sharedStyles.contentLayout}>
+      <Grid container spacing={2} sx={{ flex: 1, minHeight: 0 }}>
         
-        <div style={{ width: '100%' }}>
-          <div className="glass-card" style={sharedStyles.calendarCard}>
-            <Calendar 
-              onChange={setSelectedDate} 
-              value={selectedDate} 
-              tileContent={tileContent} 
-              locale="uk-UA" 
-            />
-          </div>
-        </div>
+        {/* КОЛОНКА 1: КАЛЕНДАР ТА ПОДІЇ */}
+        <Grid item xs={12} md={3.5} sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+          <Paper elevation={0} sx={{ p: 1.5, borderRadius: '24px', border: '1px solid #f1f4ff' }}>
+            <Calendar onChange={setSelectedDate} value={selectedDate} tileContent={tileContent} locale="uk-UA" />
+          </Paper>
 
-        <div style={{ width: '100%' }}>
-          <div className="glass-card" style={sharedStyles.physCard}>
-            <div style={sharedStyles.sectionHeader}>
-              <HeartPulse size={20} color="#ff7eb3" />
-              <h3 style={sharedStyles.sectionTitle}>Фізичний стан</h3>
-            </div>
-            {dailyPhys.length > 0 ? dailyPhys.map((p, i) => (
-              <div key={i} style={sharedStyles.physEntry}>
-                <p style={sharedStyles.energyText}>Енергія: <strong>{p.energyLevel}/10</strong></p>
-                <div style={sharedStyles.tagWrapper}>
-                  {p.symptoms?.map((s, idx) => (
-                    <span key={idx} style={sharedStyles.symptomTag}>{s}</span>
+          <Paper elevation={0} sx={{ p: 2, flex: 1, borderRadius: '24px', display: 'flex', flexDirection: 'column', bgcolor: '#fff', border: '1px solid #f1f4ff', overflow: 'hidden' }}>
+            <Stack direction="row" spacing={1} alignItems="center" mb={1.5}>
+              <Avatar sx={{ bgcolor: '#fff8f1', width: 32, height: 32 }}><CalendarIcon size={16} color="#ff9f43" /></Avatar>
+              <Typography variant="subtitle2" fontWeight={500}>Події дня</Typography>
+            </Stack>
+            <Box sx={columnScrollStyles}>
+              {dailyEvents.length > 0 ? (
+                <Stack spacing={1}>
+                  {dailyEvents.map((e, i) => (
+                    <Box key={i} sx={{ p: 1.5, bgcolor: '#fffaf5', borderRadius: '12px', borderLeft: '4px solid #ff9f43' }}>
+                      <Typography variant="body2" fontWeight={400}>{e.title}</Typography>
+                      <Typography variant="caption" color="text.secondary">{e.category || 'Загальне'}</Typography>
+                    </Box>
                   ))}
-                </div>
-              </div>
-            )) : <p style={sharedStyles.emptyText}>Записів немає</p>}
-          </div>
-        </div>
+                </Stack>
+              ) : <Typography variant="caption" color="text.disabled">Сьогодні без подій</Typography>}
+            </Box>
+          </Paper>
+        </Grid>
 
-        {/* КОЛОНКА 3: АКТИВНІСТЬ */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '100%' }}>
-          
-          {/* Сон */}
-          <div className="glass-card" style={sharedStyles.actionCard}>
-            <div style={sharedStyles.cardTop}>
-              <div style={sharedStyles.cardLabel}><Moon size={16} color="#b8aff5" /> Сон</div>
-            </div>
-            {dailySleep ? (
-              <p style={sharedStyles.cardValue}><strong>{dailySleep.hours}г</strong> <small>(якість: {dailySleep.quality})</small></p>
-            ) : <p style={sharedStyles.emptyText}>Не вказано</p>}
-          </div>
+        {/* КОЛОНКА 2: ЖУРНАЛ НАСТРОЮ (ОНОВЛЕНО ФОН) */}
+        <Grid item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <Paper elevation={0} sx={{ p: 3, height: '100%', borderRadius: '24px', display: 'flex', flexDirection: 'column', bgcolor: '#fff', border: '1px solid #f1f4ff', overflow: 'hidden' }}>
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2.5 }}>
+              <Avatar sx={{ bgcolor: '#f3f0ff', width: 40, height: 40 }}><Activity size={24} color="#9d8df1" /></Avatar>
+              <Typography variant="h6" sx={{ fontWeight: 500 }}>Журнал настрою</Typography>
+            </Stack>
 
-          {/* Події */}
-          {dailyEvents.length > 0 ? dailyEvents.map((e, i) => (
-            <div key={i} className="glass-card" style={sharedStyles.actionCard}>
-              <div style={sharedStyles.cardTop}>
-                <div style={sharedStyles.cardLabel}><CalendarIcon size={16} color="#ff9f43" /> Подія</div>
-                <ChevronRight size={14} color="#bdc3c7" />
-              </div>
-              <p style={sharedStyles.cardValue}>{e.title}</p>
-              <span style={{ fontSize: '10px', color: '#ff9f43', fontWeight: '800' }}>{e.category}</span>
-            </div>
-          )) : (
-            <div className="glass-card" style={sharedStyles.actionCard}>
-               <div style={sharedStyles.cardTop}><CalendarIcon size={16} color="#bdc3c7" /><span style={sharedStyles.cardLabel}>Події</span></div>
-               <p style={sharedStyles.emptyText}>Подій не було</p>
-            </div>
-          )}
+            <Box sx={columnScrollStyles}>
+              {dailyMoods.length > 0 ? (
+                <Stack spacing={2}>
+                  {dailyMoods.map((m, i) => (
+                    <Paper key={i} elevation={0} sx={{ p: 2, borderRadius: '20px', border: '1px solid #f1f4ff', bgcolor: '#fafbff' }}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                        <Box>
+                          <Typography variant="body1" fontWeight={500} color="#2c3e50">{m.feelingType}</Typography>
+                          <Stack direction="row" spacing={0.5} alignItems="center">
+                            <Clock size={14} color="#94a3b8" />
+                            <Typography variant="caption" color="text.secondary">
+                              {new Date(m.date).toLocaleTimeString('uk-UA', {hour:'2-digit', minute:'2-digit'})}
+                            </Typography>
+                          </Stack>
+                        </Box>
+                        <Chip label={`${m.moodScore}/10`} sx={{ bgcolor: '#9d8df1', color: '#fff', fontWeight: 500, borderRadius: '10px' }} />
+                      </Stack>
+                      {m.comment && (
+                        <Typography variant="body2" sx={{ color: '#5f6c7b', fontStyle: 'italic', bgcolor: '#fff', p: 1.5, borderRadius: '12px', mt: 1, border: '1px solid #f1f4ff' }}>
+                          "{m.comment}"
+                        </Typography>
+                      )}
+                    </Paper>
+                  ))}
+                </Stack>
+              ) : (
+                <Stack alignItems="center" justifyContent="center" sx={{ height: '100%', opacity: 0.3 }}>
+                  <Info size={48} />
+                  <Typography variant="body1">Журнал настрою порожній</Typography>
+                </Stack>
+              )}
+            </Box>
+          </Paper>
+        </Grid>
 
-          {/* Настрій */}
-          {dailyMoods.length > 0 ? dailyMoods.map((m, i) => (
-            <div key={i} className="glass-card" style={sharedStyles.actionCard}>
-              <div style={sharedStyles.cardTop}>
-                <div style={sharedStyles.cardLabel}><Activity size={16} color="#9d8df1" /> Настрій</div>
-                <span style={sharedStyles.timeLabel}><Clock size={12}/> {new Date(m.date).toLocaleTimeString('uk-UA', {hour:'2-digit', minute:'2-digit'})}</span>
-              </div>
-              <p style={sharedStyles.cardValue}><strong>{m.moodScore}/10</strong> — {m.feelingType}</p>
-              {m.comment && <p style={sharedStyles.commentText}>"{m.comment}"</p>}
-            </div>
-          )) : null}
-        </div>
-      </div>
-    </div>
+        {/* КОЛОНКА 3: ФІЗИЧНИЙ СТАН */}
+        <Grid item xs={12} md={3.5} sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+          <Paper elevation={0} sx={{ p: 2.5, height: '100%', borderRadius: '24px', display: 'flex', flexDirection: 'column', bgcolor: '#fff', border: '1px solid #f1f4ff', overflow: 'hidden' }}>
+            <Stack direction="row" spacing={1} alignItems="center" mb={2.5}>
+              <Avatar sx={{ bgcolor: '#fff0f3', width: 32, height: 32 }}><HeartPulse size={16} color="#ff7eb3" /></Avatar>
+              <Typography variant="subtitle2" fontWeight={500}>Фізичний стан</Typography>
+            </Stack>
+            
+            <Stack direction="row" spacing={2} mb={3}>
+               <Box sx={{ flex: 1, p: 2, bgcolor: '#f8f9ff', borderRadius: '16px', textAlign: 'center' }}>
+                  <Moon size={18} color="#b8aff5" style={{ marginBottom: '4px' }} />
+                  <Typography variant="h5" fontWeight={500}>{dailySleep ? `${dailySleep.hours}г` : '--'}</Typography>
+                  <Typography variant="caption" color="text.secondary">Сон</Typography>
+               </Box>
+               <Box sx={{ flex: 1, p: 2, bgcolor: '#fff0f3', borderRadius: '16px', textAlign: 'center' }}>
+                  <Zap size={18} color="#ff7eb3" style={{ marginBottom: '4px' }} />
+                  <Typography variant="h5" fontWeight={500}>{dailyPhys[0] ? `${dailyPhys[0].energyLevel}/10` : '--'}</Typography>
+                  <Typography variant="caption" color="text.secondary">Енергія</Typography>
+               </Box>
+            </Stack>
+
+            <Divider sx={{ mb: 2 }} />
+            
+            <Box sx={columnScrollStyles}>
+              <Typography variant="caption" fontWeight={500} color="text.secondary" sx={{ mb: 1.5, display: 'block', textTransform: 'uppercase' }}>Деталі здоров'я</Typography>
+              {dailyPhys.length > 0 ? (
+                <Stack spacing={1.5}>
+                  {dailyPhys.map((p, i) => {
+                    const hasContent = p.stressLevel !== undefined || 
+                                       p.sleepQuality !== undefined || 
+                                       (p.symptoms && p.symptoms.length > 0);
+
+                    if (!hasContent) return null;
+
+                    return (
+                      <Box key={i} sx={{ p: 2, borderRadius: '16px', border: '1px solid #f1f4ff', bgcolor: '#fafbff' }}>
+                        <Stack direction="row" spacing={1} mb={hasContent ? 1.5 : 0} flexWrap="wrap" gap={1}>
+                          {p.stressLevel !== undefined && (
+                            <Chip label={`Стрес: ${p.stressLevel}`} size="small" variant="outlined" color="primary" sx={{ fontWeight: 400 }} />
+                          )}
+                          {p.sleepQuality !== undefined && (
+                            <Chip label={`Сон: ${p.sleepQuality}`} size="small" variant="outlined" color="secondary" sx={{ fontWeight: 400 }} />
+                          )}
+                        </Stack>
+                        {p.symptoms && p.symptoms.length > 0 && (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {p.symptoms.map((s, si) => (
+                              <Chip key={si} label={s} size="small" sx={{ bgcolor: '#fff', border: '1px solid #e0e0e0', fontSize: '11px', fontWeight: 400 }} />
+                            ))}
+                          </Box>
+                        )}
+                      </Box>
+                    );
+                  })}
+                </Stack>
+              ) : <Typography variant="caption" color="text.disabled">Записів немає</Typography>}
+            </Box>
+          </Paper>
+        </Grid>
+
+      </Grid>
+    </Container>
   );
 };
 

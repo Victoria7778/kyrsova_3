@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { 
+  Box, 
+  Typography, 
+  Slider, 
+  TextField, 
+  Button, 
+  MenuItem, 
+  Stack,
+  FormControl,
+  InputLabel,
+  Select 
+} from '@mui/material';
 
 const MoodForm = ({ onSuccess }) => { 
   const [moodScore, setMoodScore] = useState(5);
@@ -23,36 +35,85 @@ const MoodForm = ({ onSuccess }) => {
   };
 
   return (
-    <div style={{ padding: '10px' }}>
-      <h2 style={{ textAlign: 'center', color: '#2c3e50', marginBottom: '20px' }}>Як ви почуваєтесь?</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '25px', textAlign: 'center' }}>
-          <label style={{ display: 'block', marginBottom: '10px', fontWeight: '600' }}>Оцінка: {moodScore}/10</label>
-          <input type="range" min="1" max="10" value={moodScore} 
-                 onChange={(e) => setMoodScore(e.target.value)} 
-                 style={{ width: '100%', cursor: 'pointer' }} />
-        </div>
+    <Box sx={{ p: 1 }}>
+      <Typography variant="h6" sx={{ textAlign: 'center', color: '#9d8df1', mb: 3, fontWeight: 500 }}>
+        Як ви почуваєтесь?
+      </Typography>
+      
+      <Box component="form" onSubmit={handleSubmit}>
+        <Stack spacing={3}>
+          {/* Вибір оцінки настрою */}
+          <Box>
+            <Typography variant="body2" sx={{ color: '#95a5a6', mb: 1, textAlign: 'center' }}>
+              Оцінка настрою: {moodScore}/10
+            </Typography>
+            <Slider
+              value={moodScore}
+              min={1}
+              max={10}
+              step={1}
+              onChange={(e, newValue) => setMoodScore(newValue)}
+              sx={{ 
+                color: '#9d8df1',
+                '& .MuiSlider-thumb': {
+                  bgcolor: '#fff',
+                  border: '2px solid currentColor',
+                }
+              }}
+            />
+          </Box>
 
-        <div style={{ marginBottom: '20px' }}>
-          <select value={feelingType} onChange={(e) => setFeelingType(e.target.value)} 
-                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd' }}>
-            <option value="спокій">Спокій 🧘</option>
-            <option value="піднесено">Піднесено ✨</option>
-            <option value="стрес">Стрес 🔥</option>
-            <option value="заплутаність">Заплутаність 🤔</option>
-            <option value="втома">Втома 😴</option>
-          </select>
-        </div>
+          {/* Вибір стану */}
+          <FormControl fullWidth>
+            <InputLabel id="feeling-select-label">Ваш стан</InputLabel>
+            <Select
+              labelId="feeling-select-label"
+              value={feelingType}
+              label="Ваш стан"
+              onChange={(e) => setFeelingType(e.target.value)}
+              sx={{ borderRadius: '15px' }}
+            >
+              <MenuItem value="спокій">Спокій</MenuItem>
+              <MenuItem value="піднесено">Піднесено</MenuItem>
+              <MenuItem value="стрес">Стрес</MenuItem>
+              <MenuItem value="заплутаність">Заплутаність</MenuItem>
+              <MenuItem value="втома">Втома</MenuItem>
+            </Select>
+          </FormControl>
 
-        <textarea placeholder="Що на думці?" 
-                  value={comment} onChange={(e) => setComment(e.target.value)}
-                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', minHeight: '80px', marginBottom: '20px', boxSizing: 'border-box' }} />
+          {/* Коментар */}
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Що на думці?"
+            variant="outlined"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '15px' } }}
+          />
 
-        <button type="submit" style={{ width: '100%', padding: '15px', backgroundColor: '#4a90e2', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}>
-          Зберегти
-        </button>
-      </form>
-    </div>
+          {/* Кнопка збереження */}
+          <Button 
+            type="submit" 
+            fullWidth 
+            variant="contained" 
+            sx={{ 
+              py: 1.8, 
+              bgcolor: '#9d8df1', 
+              borderRadius: '12px', 
+              textTransform: 'none',
+              fontSize: '1rem',
+              fontWeight: 500,
+              boxShadow: '0 8px 20px rgba(157, 141, 241, 0.3)',
+              '&:hover': { bgcolor: '#8a7ae0' }
+            }}
+          >
+            Зберегти
+          </Button>
+        </Stack>
+      </Box>
+    </Box>
   );
 };
 

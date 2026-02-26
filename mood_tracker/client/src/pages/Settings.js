@@ -1,5 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  TextField,
+  Button,
+  Stack,
+  IconButton,
+  Alert,
+  Divider,
+  Fade
+} from '@mui/material';
+import {
+  User,
+  Mail,
+  Edit2,
+  Check,
+  Settings as SettingsIcon,
+  ShieldCheck,
+  Stethoscope
+} from 'lucide-react';
 
 const Settings = () => {
   const [userData, setUserData] = useState({
@@ -14,155 +36,206 @@ const Settings = () => {
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '' });
   const [message, setMessage] = useState({ text: '', type: '' });
 
- const handleUpdateName = async (e) => {
-  e.preventDefault();
-  if (!window.confirm("Зберегти нове ім'я?")) return;
+  const handleUpdateName = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    try {
+      const res = await axios.put(
+        'http://localhost:5000/api/auth/update-profile',
+        { name: newName },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-  const token = localStorage.getItem('token');
-  try {
-    const res = await axios.put(
-      'http://localhost:5000/api/auth/update-profile', 
-      { name: newName }, 
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    
-    localStorage.setItem('userName', res.data.name);
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    user.name = res.data.name;
-    localStorage.setItem('user', JSON.stringify(user));
-
-    setUserData({ ...userData, name: res.data.name });
-    setIsEditingName(false);
-    setMessage({ text: 'Ім’я оновлено успішно!', type: 'success' });
-  } catch (err) {
-    setMessage({ text: err.response?.data?.message || 'Помилка', type: 'error' });
-  }
-};
+      localStorage.setItem('userName', res.data.name);
+      setUserData({ ...userData, name: res.data.name });
+      setIsEditingName(false);
+      setMessage({ text: "Ім'я оновлено успішно!", type: 'success' });
+      
+      // Сповіщення інших компонентів про зміну імені
+      window.dispatchEvent(new Event('storage'));
+    } catch (err) {
+      setMessage({ text: err.response?.data?.message || 'Помилка оновлення', type: 'error' });
+    }
+  };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    if (!window.confirm("Змінити пароль?")) return;
-
     const token = localStorage.getItem('token');
     try {
       await axios.put(
-        'http://localhost:5000/api/auth/change-password', 
-        passwords, 
+        'http://localhost:5000/api/auth/change-password',
+        passwords,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setIsEditingPassword(false);
       setPasswords({ currentPassword: '', newPassword: '' });
-      setMessage({ text: 'Пароль змінено!', type: 'success' });
+      setMessage({ text: 'Пароль змінено успішно!', type: 'success' });
     } catch (err) {
-      setMessage({ text: err.response?.data?.message || 'Помилка', type: 'error' });
+      setMessage({ text: err.response?.data?.message || 'Помилка доступу', type: 'error' });
     }
   };
 
-  return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Налаштування ⚙️</h1>
+  const sectionStyle = {
+    p: 3,
+    borderRadius: '24px',
+    bgcolor: 'white',
+    boxShadow: '0 10px 30px rgba(157, 141, 241, 0.05)',
+    border: '1px solid rgba(157, 141, 241, 0.1)',
+    mb: 3
+  };
 
+  const inputProps = {
+    sx: { borderRadius: '16px' }
+  };
+
+  return (
+    <Container maxWidth="sm" sx={{ py: 4 }}>
+      {/* HEADER */}
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 4 }}>
+        <Box sx={{ p: 1.5, bgcolor: '#f3f0ff', borderRadius: '16px' }}>
+          <SettingsIcon size={28} color="#9d8df1" />
+        </Box>
+        <Typography variant="h4" fontWeight={500} color="#2c3e50">
+          Налаштування
+        </Typography>
+      </Stack>
+
+      {/* MESSAGES */}
       {message.text && (
-        <div style={message.type === 'success' ? styles.successMsg : styles.errorMsg}>
-          {message.text}
-        </div>
+        <Fade in={!!message.text}>
+          <Alert 
+            severity={message.type} 
+            sx={{ mb: 3, borderRadius: '16px' }}
+            onClose={() => setMessage({ text: '', type: '' })}
+          >
+            {message.text}
+          </Alert>
+        </Fade>
       )}
 
-      <section style={styles.section}>
-        <div style={styles.sectionHeader}>
-          <h3>Персональні дані</h3>
+      {/* SECTION: PERSONAL INFO */}
+      <Paper elevation={0} sx={sectionStyle}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <User size={20} color="#9d8df1" />
+            <Typography variant="h6" fontWeight={500}>Персональні дані</Typography>
+          </Stack>
           {!isEditingName && (
-            <button onClick={() => setIsEditingName(true)} style={styles.editBtn}>Змінити Ім’я</button>
+            <IconButton onClick={() => setIsEditingName(true)} size="small" sx={{ bgcolor: '#f8fafc' }}>
+              <Edit2 size={16} color="#9d8df1" />
+            </IconButton>
           )}
-        </div>
+        </Stack>
 
         {isEditingName ? (
-          <form onSubmit={handleUpdateName} style={styles.form}>
-            <input 
-              type="text" 
-              value={newName} 
-              onChange={(e) => setNewName(e.target.value)} 
-              style={styles.input}
+          <Box component="form" onSubmit={handleUpdateName}>
+            <TextField
+              fullWidth
+              label="Ваше ім'я"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              sx={{ mb: 2 }}
+              InputProps={inputProps}
               required
+              autoFocus
             />
-            <div style={styles.btnGroup}>
-              <button type="submit" style={styles.saveBtn}>Зберегти</button>
-              <button type="button" onClick={() => setIsEditingName(false)} style={styles.cancelBtn}>Скасувати</button>
-            </div>
-          </form>
+            <Stack direction="row" spacing={1}>
+              <Button type="submit" variant="contained" sx={{ bgcolor: '#9d8df1', borderRadius: '12px', textTransform: 'none', '&:hover': { bgcolor: '#8a7ae0' } }}>
+                Зберегти
+              </Button>
+              <Button onClick={() => setIsEditingName(false)} variant="text" color="inherit" sx={{ textTransform: 'none' }}>
+                Скасувати
+              </Button>
+            </Stack>
+          </Box>
         ) : (
-          <div style={styles.infoRow}>
-            <p><strong>Ім’я:</strong> {userData.name || 'Не вказано'}</p>
-            <p><strong>Email:</strong> {userData.email}</p>
-          </div>
+          <Stack spacing={2}>
+            <Box>
+              <Typography variant="caption" color="text.disabled" fontWeight={700} sx={{ textTransform: 'uppercase' }}>Ім'я</Typography>
+              <Typography variant="body1" fontWeight={400} color="#2c3e50">{userData.name || 'Не вказано'}</Typography>
+            </Box>
+            <Divider sx={{ borderStyle: 'dashed' }} />
+            <Box>
+              <Typography variant="caption" color="text.disabled" fontWeight={700} sx={{ textTransform: 'uppercase' }}>Email</Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Mail size={14} color="#94a3b8" />
+                <Typography variant="body1" color="#2c3e50">{userData.email}</Typography>
+              </Stack>
+            </Box>
+          </Stack>
         )}
-      </section>
+      </Paper>
 
-      <section style={styles.section}>
-        <div style={styles.sectionHeader}>
-          <h3>Безпека</h3>
+      {/* SECTION: SECURITY */}
+      <Paper elevation={0} sx={sectionStyle}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <ShieldCheck size={20} color="#ff7eb3" />
+            <Typography variant="h6" fontWeight={500}>Безпека</Typography>
+          </Stack>
           {!isEditingPassword && (
-            <button onClick={() => setIsEditingPassword(true)} style={styles.editBtn}>Змінити пароль</button>
+            <Button 
+              size="small" 
+              variant="outlined" 
+              onClick={() => setIsEditingPassword(true)}
+              sx={{ borderRadius: '10px', textTransform: 'none', color: '#ff7eb3', borderColor: '#ff7eb3' }}
+            >
+              Змінити пароль
+            </Button>
           )}
-        </div>
+        </Stack>
 
         {isEditingPassword ? (
-          <form onSubmit={handleChangePassword} style={styles.form}>
-            <input 
-              type="password" 
-              placeholder="Поточний пароль" 
-              value={passwords.currentPassword}
-              onChange={(e) => setPasswords({...passwords, currentPassword: e.target.value})}
-              style={styles.input}
-              required
-            />
-            <input 
-              type="password" 
-              placeholder="Новий пароль" 
-              value={passwords.newPassword}
-              onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})}
-              style={styles.input}
-              required
-            />
-            <div style={styles.btnGroup}>
-              <button type="submit" style={styles.saveBtn}>Оновити</button>
-              <button type="button" onClick={() => setIsEditingPassword(false)} style={styles.cancelBtn}>Скасувати</button>
-            </div>
-          </form>
+          <Box component="form" onSubmit={handleChangePassword}>
+            <Stack spacing={2}>
+              <TextField
+                fullWidth
+                type="password"
+                label="Поточний пароль"
+                value={passwords.currentPassword}
+                onChange={(e) => setPasswords({...passwords, currentPassword: e.target.value})}
+                InputProps={inputProps}
+                required
+              />
+              <TextField
+                fullWidth
+                type="password"
+                label="Новий пароль"
+                value={passwords.newPassword}
+                onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})}
+                InputProps={inputProps}
+                required
+              />
+              <Stack direction="row" spacing={1}>
+                <Button type="submit" variant="contained" sx={{ bgcolor: '#ff7eb3', '&:hover': { bgcolor: '#f06292' }, borderRadius: '12px', textTransform: 'none' }}>
+                  Оновити пароль
+                </Button>
+                <Button onClick={() => setIsEditingPassword(false)} variant="text" color="inherit" sx={{ textTransform: 'none' }}>
+                  Скасувати
+                </Button>
+              </Stack>
+            </Stack>
+          </Box>
         ) : (
-          <p style={styles.infoText}>Пароль встановлено</p>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Check size={16} color="#2ecc71" />
+            <Typography variant="body2" color="text.secondary" fontWeight={300}>Ваш акаунт захищено паролем</Typography>
+          </Stack>
         )}
-      </section>
+      </Paper>
 
-      <section style={styles.section}>
-        <h3>Ваш Психолог 🩺</h3>
-        <p style={styles.infoText}>Модуль спеціалістів буде доступний у версії 2.0</p>
-      </section>
-    </div>
+      {/* SECTION: SPECIALISTS */}
+      <Paper elevation={0} sx={{ ...sectionStyle, borderStyle: 'dashed', bgcolor: '#f8fafc', mb: 0 }}>
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+          <Stethoscope size={20} color="#94a3b8" />
+          <Typography variant="h6" fontWeight={500} color="#94a3b8">Ваш Психолог</Typography>
+        </Stack>
+        <Typography variant="body2" color="text.disabled" fontWeight={300}>
+          Модуль спеціалістів буде доступний у версії 2.0. Ви зможете ділитися своєю статистикою з лікарем.
+        </Typography>
+      </Paper>
+    </Container>
   );
-};
-
-const styles = {
-  container: { padding: '40px', maxWidth: '800px', margin: '0 auto', fontFamily: 'Arial' },
-  title: { color: '#2c3e50', marginBottom: '30px' },
-  section: { 
-    backgroundColor: 'white', padding: '25px', borderRadius: '20px', 
-    marginBottom: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' 
-  },
-  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' },
-  editBtn: { 
-    padding: '6px 15px', fontSize: '12px', cursor: 'pointer', 
-    backgroundColor: '#f1f5f9', border: '1px solid #cbd5e0', borderRadius: '6px' 
-  },
-  infoRow: { color: '#34495e', lineHeight: '1.6' },
-  infoText: { color: '#7f8c8d', fontSize: '14px' },
-  form: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' },
-  input: { padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' },
-  btnGroup: { display: 'flex', gap: '10px' },
-  saveBtn: { padding: '8px 20px', backgroundColor: '#4a90e2', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' },
-  cancelBtn: { padding: '8px 20px', backgroundColor: '#eee', border: 'none', borderRadius: '6px', cursor: 'pointer' },
-  successMsg: { padding: '10px', backgroundColor: '#d4edda', color: '#155724', borderRadius: '8px', marginBottom: '20px' },
-  errorMsg: { padding: '10px', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '8px', marginBottom: '20px' }
 };
 
 export default Settings;

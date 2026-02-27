@@ -17,13 +17,13 @@ import {
   User,
   Mail,
   Edit2,
-  Check,
   Settings as SettingsIcon,
   ShieldCheck,
-  Stethoscope
+  Info
 } from 'lucide-react';
 
 const Settings = () => {
+  const userRole = localStorage.getItem('userRole');
   const [userData, setUserData] = useState({
     name: localStorage.getItem('userName') || '',
     email: localStorage.getItem('userEmail') || ''
@@ -50,8 +50,6 @@ const Settings = () => {
       setUserData({ ...userData, name: res.data.name });
       setIsEditingName(false);
       setMessage({ text: "Ім'я оновлено успішно!", type: 'success' });
-      
-      // Сповіщення інших компонентів про зміну імені
       window.dispatchEvent(new Event('storage'));
     } catch (err) {
       setMessage({ text: err.response?.data?.message || 'Помилка оновлення', type: 'error' });
@@ -90,7 +88,6 @@ const Settings = () => {
 
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
-      {/* HEADER */}
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 4 }}>
         <Box sx={{ p: 1.5, bgcolor: '#f3f0ff', borderRadius: '16px' }}>
           <SettingsIcon size={28} color="#9d8df1" />
@@ -100,7 +97,6 @@ const Settings = () => {
         </Typography>
       </Stack>
 
-      {/* MESSAGES */}
       {message.text && (
         <Fade in={!!message.text}>
           <Alert 
@@ -113,7 +109,6 @@ const Settings = () => {
         </Fade>
       )}
 
-      {/* SECTION: PERSONAL INFO */}
       <Paper elevation={0} sx={sectionStyle}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
           <Stack direction="row" spacing={1} alignItems="center">
@@ -166,7 +161,6 @@ const Settings = () => {
         )}
       </Paper>
 
-      {/* SECTION: SECURITY */}
       <Paper elevation={0} sx={sectionStyle}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
           <Stack direction="row" spacing={1} alignItems="center">
@@ -217,23 +211,21 @@ const Settings = () => {
             </Stack>
           </Box>
         ) : (
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Check size={16} color="#2ecc71" />
-            <Typography variant="body2" color="text.secondary" fontWeight={300}>Ваш акаунт захищено паролем</Typography>
-          </Stack>
+          <Typography variant="body2" color="text.secondary" fontWeight={300}>Ваш акаунт захищено паролем</Typography>
         )}
       </Paper>
 
-      {/* SECTION: SPECIALISTS */}
-      <Paper elevation={0} sx={{ ...sectionStyle, borderStyle: 'dashed', bgcolor: '#f8fafc', mb: 0 }}>
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-          <Stethoscope size={20} color="#94a3b8" />
-          <Typography variant="h6" fontWeight={500} color="#94a3b8">Ваш Психолог</Typography>
-        </Stack>
-        <Typography variant="body2" color="text.disabled" fontWeight={300}>
-          Модуль спеціалістів буде доступний у версії 2.0. Ви зможете ділитися своєю статистикою з лікарем.
-        </Typography>
-      </Paper>
+      {userRole === 'admin' && (
+        <Paper elevation={0} sx={{ ...sectionStyle, bgcolor: '#f1f4ff', borderStyle: 'dashed', mb: 0 }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+            <Info size={20} color="#9d8df1" />
+            <Typography variant="h6" fontWeight={500} color="#9d8df1">Режим Адміністратора</Typography>
+          </Stack>
+          <Typography variant="body2" color="text.secondary" fontWeight={300}>
+            Ви маєте повний доступ до управління системою. Налаштування зв'язків між психологами та пацієнтами здійснюються через розділ "Аудит підключень".
+          </Typography>
+        </Paper>
+      )}
     </Container>
   );
 };

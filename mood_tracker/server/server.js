@@ -6,7 +6,7 @@ require('dotenv').config();
 const app = express();
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
-
+const psychologistRoutes = require('./routes/psychologist');
 app.use(cors());
 app.use(express.json()); 
 
@@ -14,6 +14,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/mood', require('./routes/mood'));
 app.use('/api/admin', adminRoutes);
+app.use('/api/psychologist', psychologistRoutes);
 
 const uri = process.env.MONGODB_URI;
 mongoose.connect(uri)

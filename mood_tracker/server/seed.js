@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('./models/User');
 const Mood = require('./models/Mood');
-const Sleep = require('./models/sleep');
+const Sleep = require('./models/Sleep');
 require('dotenv').config();
 
 const seed = async () => {

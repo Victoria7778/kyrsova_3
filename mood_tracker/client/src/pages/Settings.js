@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Box,
@@ -25,13 +25,15 @@ import {
   UserPlus,
   Search,
   CheckCircle2,
-  Copy
+  Copy,
+  UserRoundCheck
 } from 'lucide-react';
 
 const Settings = () => {
   const userRole = localStorage.getItem('userRole');
-  // Отримуємо власний ID (знадобиться для психолога)
-  const myId = localStorage.getItem('userId') || JSON.parse(localStorage.getItem('user') || '{}').id;
+  
+  // Отримуємо власний ID психолога з localStorage
+  const myId = localStorage.getItem('userId') || '';
 
   const [userData, setUserData] = useState({
     name: localStorage.getItem('userName') || '',
@@ -43,10 +45,30 @@ const Settings = () => {
 
   const [psyIdInput, setPsyIdInput] = useState('');
   const [foundPsychologist, setFoundPsychologist] = useState(null);
+  const [connectedPsychologist, setConnectedPsychologist] = useState(null);
 
   const [newName, setNewName] = useState(userData.name);
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '' });
   const [message, setMessage] = useState({ text: '', type: '' });
+
+  
+  useEffect(() => {
+    if (userRole === 'user') {
+      fetchConnectedPsychologist();
+    }
+  }, [userRole]);
+
+  const fetchConnectedPsychologist = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await axios.get('http://localhost:5000/api/psychologist/my-specialist', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data) setConnectedPsychologist(res.data);
+    } catch (err) {
+      console.log("Психолог ще не підключений");
+    }
+  };
 
   const handleSearchPsychologist = async () => {
     if (!psyIdInput || psyIdInput.length < 10) {
@@ -66,7 +88,6 @@ const Settings = () => {
     }
   };
 
-  // Остаточне підключення до знайденого психолога
   const handleConnect = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -77,6 +98,7 @@ const Settings = () => {
       setMessage({ text: res.data.message, type: 'success' });
       setFoundPsychologist(null);
       setPsyIdInput('');
+      fetchConnectedPsychologist(); 
     } catch (err) {
       setMessage({ text: 'Помилка підключення', type: 'error' });
     }
@@ -84,7 +106,7 @@ const Settings = () => {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(myId);
-    alert('Ваш ID скопійовано! Надішліть його пацієнту.');
+    setMessage({ text: 'Ваш ID скопійовано! Надішліть його пацієнту.', type: 'success' });
   };
 
   const handleUpdateName = async (e) => {
@@ -171,50 +193,72 @@ const Settings = () => {
           </Box>
         ) : userRole === 'user' ? (
           <Box>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-              <UserPlus size={20} color="#9d8df1" />
-              <Typography variant="h6" fontWeight={500}>Мій психолог</Typography>
-            </Stack>
-            <Stack direction="row" spacing={1}>
-              <TextField 
-                fullWidth 
-                size="small" 
-                placeholder="Введіть ID психолога..." 
-                value={psyIdInput}
-                onChange={(e) => setPsyIdInput(e.target.value)}
-                InputProps={inputProps}
-              />
-              <Button 
-                variant="outlined" 
-                onClick={handleSearchPsychologist}
-                sx={{ borderRadius: '12px', borderColor: '#9d8df1', color: '#9d8df1' }}
-              >
-                <Search size={18} />
-              </Button>
-            </Stack>
-
-            {foundPsychologist && (
-              <Fade in={!!foundPsychologist}>
-                <Card sx={{ mt: 2, p: 2, borderRadius: '16px', border: '1px solid #e0dbff', boxShadow: 'none' }}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar sx={{ bgcolor: '#9d8df1', width: 40, height: 40 }}>{foundPsychologist.name[0]}</Avatar>
-                      <Box>
-                        <Typography variant="body1" fontWeight={500}>{foundPsychologist.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">{foundPsychologist.email}</Typography>
-                      </Box>
-                    </Stack>
-                    <Button 
-                      variant="contained" 
-                      onClick={handleConnect}
-                      startIcon={<CheckCircle2 size={18} />}
-                      sx={{ bgcolor: '#9d8df1', borderRadius: '10px', textTransform: 'none' }}
-                    >
-                      Підключити
-                    </Button>
+            {connectedPsychologist ? (
+              <Box>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                  <UserRoundCheck size={20} color="#2ecc71" />
+                  <Typography variant="h6" fontWeight={500}>Ваш психолог</Typography>
+                </Stack>
+                <Card sx={{ p: 2, borderRadius: '16px', border: '1px solid #2ecc71', bgcolor: '#f0fff4', boxShadow: 'none' }}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Avatar sx={{ bgcolor: '#2ecc71', width: 45, height: 45 }}>
+                      {connectedPsychologist.name ? connectedPsychologist.name[0] : 'P'}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="body1" fontWeight={600}>{connectedPsychologist.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">{connectedPsychologist.email}</Typography>
+                    </Box>
                   </Stack>
                 </Card>
-              </Fade>
+              </Box>
+            ) : (
+              <Box>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                  <UserPlus size={20} color="#9d8df1" />
+                  <Typography variant="h6" fontWeight={500}>Підключити психолога</Typography>
+                </Stack>
+                <Stack direction="row" spacing={1}>
+                  <TextField 
+                    fullWidth 
+                    size="small" 
+                    placeholder="Введіть ID психолога..." 
+                    value={psyIdInput}
+                    onChange={(e) => setPsyIdInput(e.target.value)}
+                    InputProps={inputProps}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    onClick={handleSearchPsychologist}
+                    sx={{ borderRadius: '12px', borderColor: '#9d8df1', color: '#9d8df1' }}
+                  >
+                    <Search size={18} />
+                  </Button>
+                </Stack>
+
+                {foundPsychologist && (
+                  <Fade in={!!foundPsychologist}>
+                    <Card sx={{ mt: 2, p: 2, borderRadius: '16px', border: '1px solid #e0dbff', boxShadow: 'none' }}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <Avatar sx={{ bgcolor: '#9d8df1', width: 40, height: 40 }}>{foundPsychologist.name[0]}</Avatar>
+                          <Box>
+                            <Typography variant="body1" fontWeight={500}>{foundPsychologist.name}</Typography>
+                            <Typography variant="caption" color="text.secondary">{foundPsychologist.email}</Typography>
+                          </Box>
+                        </Stack>
+                        <Button 
+                          variant="contained" 
+                          onClick={handleConnect}
+                          startIcon={<CheckCircle2 size={18} />}
+                          sx={{ bgcolor: '#9d8df1', borderRadius: '10px', textTransform: 'none' }}
+                        >
+                          Підключити
+                        </Button>
+                      </Stack>
+                    </Card>
+                  </Fade>
+                )}
+              </Box>
             )}
           </Box>
         ) : null}
@@ -289,18 +333,6 @@ const Settings = () => {
           <Typography variant="body2" color="text.secondary">Ваш акаунт захищено паролем</Typography>
         )}
       </Paper>
-
-      {userRole === 'admin' && (
-        <Paper elevation={0} sx={{ ...sectionStyle, bgcolor: '#f1f4ff', borderStyle: 'dashed', mb: 0 }}>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-            <Info size={20} color="#9d8df1" />
-            <Typography variant="h6" fontWeight={500} color="#9d8df1">Режим Адміністратора</Typography>
-          </Stack>
-          <Typography variant="body2" color="text.secondary">
-            Керування зв'язками доступне через розділ "Аудит підключень".
-          </Typography>
-        </Paper>
-      )}
     </Container>
   );
 };

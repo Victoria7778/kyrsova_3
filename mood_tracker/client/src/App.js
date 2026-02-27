@@ -16,6 +16,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import AuditConnections from './pages/AuditConnections';
 import Patients from './pages/Patients';
 import PsychologistDashboard from './pages/PsychologistDashboard';
+import PatientDetails from './pages/PatientDetails';
+
 
 function App() {
   const [userRole, setUserRole] = useState(localStorage.getItem('userRole'));
@@ -88,6 +90,10 @@ function App() {
           <Route 
            path="/psycho-dashboard" 
            element={userRole === 'psychologist' ? <PsychologistDashboard /> : <Navigate to="/" replace />} 
+          />
+          <Route 
+            path="/patient/:patientId" 
+            element={userRole === 'psychologist' ? <PatientDetails /> : <Navigate to="/" replace />} 
           />
 
           {/* Редірект для всього іншого */}

@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const Mood = require('../models/Mood'); // ОБОВ'ЯЗКОВО ДОДАЙ ЦЕЙ ІМПОРТ
+const Mood = require('../models/Mood'); 
 const auth = require('../middleware/auth');
 const checkRole = require('../middleware/roleCheck');
 
-// 1. Отримати список усіх користувачів
 router.get('/users', auth, checkRole(['admin']), async (req, res) => {
   try {
     const users = await User.find().select('-password').sort({ createdAt: -1 });
@@ -15,7 +14,6 @@ router.get('/users', auth, checkRole(['admin']), async (req, res) => {
   }
 });
 
-// 2. Оновити роль користувача (user/psychologist/admin)
 router.put('/update-role', auth, checkRole(['admin']), async (req, res) => {
   try {
     const { userId, newRole } = req.body;
@@ -26,26 +24,34 @@ router.put('/update-role', auth, checkRole(['admin']), async (req, res) => {
   }
 });
 
-// 3. Аудит підключень психологів
 router.get('/audit-connections', auth, checkRole(['admin']), async (req, res) => {
   try {
-    const psychologists = await User.find({ role: 'psychologist' })
-      .select('name email patients')
-      .populate('patients', 'name email'); 
+    const psychologists = await User.find({ role: 'psychologist' }).select('name email');
 
-    res.json(psychologists);
+    const auditData = await Promise.all(psychologists.map(async (psycho) => {
+      const connectedPatients = await User.find({ psychologistId: psycho._id })
+        .select('name email');
+      
+      return {
+        _id: psycho._id,
+        name: psycho.name,
+        email: psycho.email,
+        patients: connectedPatients 
+      };
+    }));
+
+    res.json(auditData);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Помилка при проведенні аудиту" });
   }
 });
 
-// 4. Загальна статистика для головної сторінки адміна
 router.get('/stats', auth, checkRole(['admin']), async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const totalPsychologists = await User.countDocuments({ role: 'psychologist' });
     
-    // Агрегація для підрахунку середнього настрою по всій базі
     const moodStats = await Mood.aggregate([
       { $group: { _id: null, avgMood: { $avg: "$moodScore" } } }
     ]);
@@ -66,5 +72,4 @@ router.get('/stats', auth, checkRole(['admin']), async (req, res) => {
   }
 });
 
-// Експорт має бути в самому кінці!
 module.exports = router;

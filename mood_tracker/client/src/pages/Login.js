@@ -25,24 +25,27 @@ const Login = () => {
     try {
       const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
       
- 
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('userEmail', res.data.user.email);
       localStorage.setItem('userRole', res.data.user.role); 
       localStorage.setItem('userName', res.data.user.name);
+      
+      localStorage.setItem('userId', res.data.user.id || res.data.user._id); 
 
       window.dispatchEvent(new Event('storage'));
 
-      if (res.data.user.role === 'admin') {
-        navigate('/admin');
-      } else if (res.data.user.role === 'psychologist') {
-        navigate('/patients');
+      const role = res.data.user.role;
+      if (role === 'admin') {
+        navigate('/admin-dashboard');
+      } else if (role === 'psychologist') {
+        navigate('/psycho-dashboard');
       } else {
         navigate('/');
       }
 
     } catch (err) {
-      alert(err.response?.data?.message || 'Помилка при вході');
+      // Виводимо помилку, якщо пароль або пошта невірні
+      alert(err.response?.data?.message || 'Помилка при вході. Перевірте дані.');
     }
   };
 
@@ -78,7 +81,7 @@ const Login = () => {
               З поверненням!
             </Typography>
             <Typography variant="body2" sx={{ color: '#95a5a6', mb: 4, fontWeight: 300 }}>
-              Увійдіть у свій акаунт Mood Tracker
+              Увійдіть у свій акаунт Moodly
             </Typography>
             
             <Box component="form" onSubmit={handleLogin}>
@@ -89,6 +92,7 @@ const Login = () => {
                   type="email"
                   placeholder="example@ukma.edu.ua"
                   variant="outlined"
+                  value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   InputProps={{ sx: { borderRadius: '16px' } }}
@@ -100,6 +104,7 @@ const Login = () => {
                   type="password"
                   placeholder="••••••••"
                   variant="outlined"
+                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   InputProps={{ sx: { borderRadius: '16px' } }}

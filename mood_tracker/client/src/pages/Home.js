@@ -53,16 +53,19 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (isLoggedIn) fetchTodayData();
-  }, [isLoggedIn]);
+    if (!isLoggedIn) {
+      navigate('/login');
+    } else {
+      fetchTodayData();
+    }
+  }, [isLoggedIn, navigate]);
 
   const handleLogout = () => {
     localStorage.clear();
     navigate('/login');
-    window.location.reload();
+ 
   };
 
-  // Функція для запису сну
   const handleSleepSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
@@ -80,7 +83,6 @@ const Home = () => {
     }
   };
 
-  // Функція для додавання події
   const handleEventSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
@@ -97,10 +99,7 @@ const Home = () => {
     }
   };
 
-  if (!isLoggedIn) {
-    navigate('/login');
-    return null;
-  }
+  if (!isLoggedIn) return null;
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, width: '100%', maxWidth: 1000, mx: 'auto', boxSizing: 'border-box' }}>
@@ -128,7 +127,7 @@ const Home = () => {
         </IconButton>
       </Box>
 
-      {/* 1. STATUS CARDS */}
+      {/* STATUS CARDS */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {[
           { label: 'Настрій', val: todayMood ? `${todayMood.moodScore}/10` : '--', icon: <Activity size={20} />, col: '#9d8df1' },
@@ -155,7 +154,7 @@ const Home = () => {
         ))}
       </Grid>
 
-      {/* 2. BIG VIOLET BUTTON */}
+      {/* BIG ACTION BUTTON */}
       <Box sx={{ mb: 4 }}>
         <Button 
           fullWidth
@@ -181,7 +180,7 @@ const Home = () => {
         </Button>
       </Box>
 
-      {/* 3. LOWER ACTION BUTTONS */}
+      {/* QUICK ACTIONS */}
       <Grid container spacing={3}>
         {[
           { label: 'Записати сон', icon: <Moon size={22} />, type: 'sleep', col: '#b8aff5' },
@@ -200,7 +199,6 @@ const Home = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.5,
-                border: '1px solid transparent',
                 '&:hover': { border: '1px solid #9d8df1', bgcolor: '#fbfaff' }
               }}
             >
@@ -223,58 +221,39 @@ const Home = () => {
               <Typography variant="h6">✕</Typography>
             </IconButton>
 
-            {/* Форма Настрою */}
             {modalType === 'mood' && <MoodForm onSuccess={() => { setModalType(null); fetchTodayData(); }} />}
-            
-            {/* Форма Фізичного стану */}
             {modalType === 'physical' && <PhysicalForm onSuccess={() => { setModalType(null); fetchTodayData(); }} />}
 
-            {/* Форма Сну */}
             {modalType === 'sleep' && (
               <Box component="form" onSubmit={handleSleepSubmit} sx={{ p: 1 }}>
                 <Typography variant="h6" sx={{ color: '#9d8df1', textAlign: 'center', mb: 3, fontWeight: 500 }}>
                   Записати сон
                 </Typography>
                 <TextField
-                  fullWidth
-                  type="number"
-                  label="Кількість годин"
-                  value={sleepHours}
-                  onChange={(e) => setSleepHours(e.target.value)}
-                  sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: '15px' } }}
-                  required
+                  fullWidth type="number" label="Кількість годин"
+                  value={sleepHours} onChange={(e) => setSleepHours(e.target.value)}
+                  sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: '15px' } }} required
                 />
                 <Stack direction="row" spacing={2}>
-                  <Button fullWidth onClick={() => setModalType(null)} variant="outlined" sx={{ borderRadius: '12px' }}>
-                    Назад
-                  </Button>
-                  <Button fullWidth type="submit" variant="contained" sx={{ bgcolor: '#9d8df1', borderRadius: '12px', '&:hover': { bgcolor: '#8a7ae0' } }}>
-                    Зберегти
-                  </Button>
+                  <Button fullWidth onClick={() => setModalType(null)} variant="outlined" sx={{ borderRadius: '12px' }}>Назад</Button>
+                  <Button fullWidth type="submit" variant="contained" sx={{ bgcolor: '#9d8df1', borderRadius: '12px' }}>Зберегти</Button>
                 </Stack>
               </Box>
             )}
 
-            {/* Форма Події */}
             {modalType === 'event' && (
               <Box component="form" onSubmit={handleEventSubmit} sx={{ p: 1 }}>
                 <Typography variant="h6" sx={{ color: '#ff9f43', textAlign: 'center', mb: 3, fontWeight: 500 }}>
                   Додати подію
                 </Typography>
                 <TextField
-                  fullWidth
-                  label="Назва події"
-                  value={eventData.title}
-                  onChange={(e) => setEventData({...eventData, title: e.target.value})}
-                  sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: '15px' } }}
-                  required
+                  fullWidth label="Назва події"
+                  value={eventData.title} onChange={(e) => setEventData({...eventData, title: e.target.value})}
+                  sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: '15px' } }} required
                 />
                 <TextField
-                  fullWidth
-                  select
-                  label="Категорія"
-                  value={eventData.category}
-                  onChange={(e) => setEventData({...eventData, category: e.target.value})}
+                  fullWidth select label="Категорія"
+                  value={eventData.category} onChange={(e) => setEventData({...eventData, category: e.target.value})}
                   sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: '15px' } }}
                 >
                   <MenuItem value="навчання">Навчання 📚</MenuItem>
@@ -282,9 +261,7 @@ const Home = () => {
                   <MenuItem value="робота">Робота 💼</MenuItem>
                   <MenuItem value="здоров'я">Здоров'я 🏥</MenuItem>
                 </TextField>
-                <Button fullWidth type="submit" variant="contained" sx={{ bgcolor: '#ff9f43', borderRadius: '12px', '&:hover': { bgcolor: '#e67e22' } }}>
-                  Додати подію
-                </Button>
+                <Button fullWidth type="submit" variant="contained" sx={{ bgcolor: '#ff9f43', borderRadius: '12px' }}>Додати</Button>
               </Box>
             )}
           </Box>

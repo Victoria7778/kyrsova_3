@@ -15,6 +15,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/mood', require('./routes/mood'));
 app.use('/api/admin', adminRoutes);
 app.use('/api/psychologist', psychologistRoutes);
+app.use('/api/analytics', require('./routes/analytics'));
 
 const uri = process.env.MONGODB_URI;
 mongoose.connect(uri)

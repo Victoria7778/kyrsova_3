@@ -6,7 +6,18 @@ const EventSchema = new mongoose.Schema({
   title: { type: String, required: true },
   category: { 
     type: String, 
-    enum: ['робота', 'навчання', 'відпочинок', 'спорт', 'інше'],
+    enum: [
+      'навчання',    
+      'робота',       
+      'відпочинок',   
+      'спорт',        
+      'хобі',          
+      'соціалізація', 
+      'здоров\'я',     
+      'побутові справи',        
+      'подорожі',      
+      'інше'         
+    ],
     default: 'інше'
   },
   description: { type: String }

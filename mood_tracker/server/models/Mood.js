@@ -9,7 +9,7 @@ const MoodSchema = new mongoose.Schema({
   feelingType: { 
     type: String, 
     required: true, 
-    enum: ['стрес', 'заплутаність', 'піднесено', 'спокій', 'втома', 'тривога'] 
+    enum: ['стрес', 'заплутаність', 'піднесено', 'спокій', 'втома', 'радість', 'тривога'] 
   },
   comment: { type: String }
 });

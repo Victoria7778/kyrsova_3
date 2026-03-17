@@ -5,6 +5,7 @@ const PhysicalState = require('./models/PhysicalState');
 const Event = require('./models/Event'); 
 
 
+
 const seedData = async () => {
   try {
     console.log("⏳ Починаємо повне перенаповнення бази даних...");

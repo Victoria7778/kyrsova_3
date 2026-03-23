@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const checkRole = require('../middleware/roleCheck');
-const adminController = requi
+const adminController = require('../controllers/adminController');
+
 router.get('/users', auth, checkRole(['admin']), adminController.getAllUsers);
 router.put('/update-role', auth, checkRole(['admin']), adminController.updateUserRole);
 router.get('/audit-connections', auth, checkRole(['admin']), adminController.auditConnections);

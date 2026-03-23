@@ -24,13 +24,12 @@ const PsychologistDashboard = () => {
     const fetchPsychoData = async () => {
       const token = localStorage.getItem('token');
       try {
-        // Запит на отримання пацієнтів (маршрут, який ми обговорювали раніше)
         const res = await axios.get('http://localhost:5000/api/psychologist/my-patients', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setStats({
           totalPatients: res.data.length,
-          activeToday: res.data.filter(p => p.hasEntryToday).length // якщо додамо таку перевірку
+          activeToday: res.data.filter(p => p.hasEntryToday).length
         });
         setLoading(false);
       } catch (err) {
@@ -45,7 +44,7 @@ const PsychologistDashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* HEADER */}
+     
       <Box sx={{ mb: 5 }}>
         <Stack direction="row" spacing={2} alignItems="center">
           <Avatar sx={{ bgcolor: '#f3f0ff', width: 56, height: 56, borderRadius: '16px' }}>
@@ -62,7 +61,6 @@ const PsychologistDashboard = () => {
         </Stack>
       </Box>
 
-      {/* STATS */}
       <Grid container spacing={3} sx={{ mb: 6 }}>
         <Grid item xs={12} sm={6}>
           <Card sx={{ borderRadius: '24px', border: '1px solid rgba(157, 141, 241, 0.1)' }}>
@@ -88,7 +86,6 @@ const PsychologistDashboard = () => {
         </Grid>
       </Grid>
 
-      {/* QUICK ACTIONS */}
       <Typography variant="body1" sx={{ mb: 3, fontWeight: 500 }}>Швидкий доступ</Typography>
       <Stack spacing={2}>
         <Button 

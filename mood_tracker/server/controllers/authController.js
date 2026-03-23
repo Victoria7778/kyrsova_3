@@ -19,7 +19,6 @@ exports.register = async (req, res) => {
         message: 'Пароль надто слабкий. Має бути мін. 8 символів, велика літера та цифра.' 
       });
     }
-
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ message: 'Користувач з таким email вже існує' });
 

@@ -36,7 +36,7 @@ const MoodEntry = ({ onSuccess }) => {
       });
       
       if (onSuccess) {
-        onSuccess(); // Закриваємо модалку, якщо компонент всередині неї
+        onSuccess(); 
       } else {
         navigate('/');
       }
@@ -53,7 +53,6 @@ const MoodEntry = ({ onSuccess }) => {
 
       <Box component="form" onSubmit={handleSubmit}>
         <Stack spacing={4}>
-          {/* Слайдер оцінки настрою */}
           <Box>
             <Typography variant="body2" sx={{ mb: 2, color: '#95a5a6', textAlign: 'center' }}>
               Оцінка стану: {moodScore} з 10
@@ -80,7 +79,6 @@ const MoodEntry = ({ onSuccess }) => {
             />
           </Box>
 
-          {/* Вибір типу відчуття */}
           <FormControl fullWidth>
             <InputLabel id="feeling-label">Ваш стан</InputLabel>
             <Select
@@ -98,7 +96,6 @@ const MoodEntry = ({ onSuccess }) => {
             </Select>
           </FormControl>
 
-          {/* Коментар */}
           <TextField
             fullWidth
             multiline
@@ -110,7 +107,6 @@ const MoodEntry = ({ onSuccess }) => {
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '16px' } }}
           />
 
-          {/* Кнопка збереження */}
           <Button 
             type="submit" 
             fullWidth 

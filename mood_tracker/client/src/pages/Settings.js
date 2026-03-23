@@ -32,7 +32,7 @@ import {
 const Settings = () => {
   const userRole = localStorage.getItem('userRole');
   
-  // Отримуємо власний ID психолога з localStorage
+
   const myId = localStorage.getItem('userId') || '';
 
   const [userData, setUserData] = useState({
@@ -173,7 +173,6 @@ const Settings = () => {
         </Fade>
       )}
 
-      {/* РОЗДІЛ: ЗВ'ЯЗОК (Психолог / Пацієнт) */}
       <Paper elevation={0} sx={{ ...sectionStyle, borderStyle: 'solid', borderColor: '#e0dbff', bgcolor: '#fbfaff' }}>
         {userRole === 'psychologist' ? (
           <Box>
@@ -264,7 +263,6 @@ const Settings = () => {
         ) : null}
       </Paper>
 
-      {/* ПЕРСОНАЛЬНІ ДАНІ */}
       <Paper elevation={0} sx={sectionStyle}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
           <Stack direction="row" spacing={1} alignItems="center">
@@ -304,7 +302,6 @@ const Settings = () => {
         )}
       </Paper>
 
-      {/* БЕЗПЕКА */}
       <Paper elevation={0} sx={sectionStyle}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
           <Stack direction="row" spacing={1} alignItems="center">

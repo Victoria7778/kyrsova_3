@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 import AppLayout from './components/AppLayout';
 
-// Сторінки
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -47,14 +46,11 @@ function App() {
     <Router>
       <AppLayout>
         <Routes>
-          {/* Публічні маршрути */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
-          {/* Головна тепер знову ТІЛЬКИ для щоденника користувача */}
           <Route path="/" element={<Home />} />
           
-          {/* Захист сторінок щоденника */}
           <Route 
             path="/add-mood" 
             element={userRole !== 'admin' ? <MoodEntry /> : <Navigate to="/admin-dashboard" replace />} 
@@ -70,7 +66,6 @@ function App() {
 
           <Route path="/settings" element={<Settings />} />
 
-          {/* Маршрути Адміна (виділені окремо) */}
           <Route 
             path="/admin-dashboard" 
             element={userRole === 'admin' ? <AdminDashboard /> : <Navigate to="/" replace />} 
@@ -96,7 +91,6 @@ function App() {
             element={userRole === 'psychologist' ? <PatientDetails /> : <Navigate to="/" replace />} 
           />
 
-          {/* Редірект для всього іншого */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppLayout>

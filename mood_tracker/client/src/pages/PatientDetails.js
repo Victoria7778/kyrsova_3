@@ -60,7 +60,6 @@ const PatientDetails = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* HEADER */}
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 4 }}>
         <IconButton onClick={() => navigate('/patients')} sx={{ bgcolor: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
           <ArrowLeft size={20} />
@@ -71,7 +70,6 @@ const PatientDetails = () => {
         </Box>
       </Stack>
 
-      {/* ALERT SECTION */}
       {isAlertStatus && (
         <Alert severity="error" icon={<AlertTriangle />} sx={{ mb: 4, borderRadius: '16px', border: '1px solid #ff4d4d' }}>
           <AlertTitle>Критичний стан</AlertTitle>
@@ -80,7 +78,6 @@ const PatientDetails = () => {
       )}
 
       <Grid container spacing={4}>
-        {/* ГРАФІК 1: ДИНАМІКА НАСТРОЮ */}
         <Grid item xs={12}>
           <Paper sx={{ p: 3, borderRadius: '24px', border: '1px solid #f1f4ff', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
@@ -111,7 +108,6 @@ const PatientDetails = () => {
           </Paper>
         </Grid>
 
-        {/* ГЛИБОКА АНАЛІТИКА (КЛЮЧОВІ КОРЕЛЯЦІЇ) */}
         <Grid item xs={12}>
           <Box sx={{ mt: 2, mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <BrainCircuit color="#9d8df1" size={28} />
@@ -119,7 +115,6 @@ const PatientDetails = () => {
           </Box>
           
           <Grid container spacing={3}>
-            {/* Вплив сну */}
             <Grid item xs={12} md={6}>
                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                   <Moon size={18} color="#6a5acd" />
@@ -135,7 +130,6 @@ const PatientDetails = () => {
                ) : <CircularProgress size={20} />}
             </Grid>
 
-            {/* Вплив енергії */}
             <Grid item xs={12} md={6}>
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                   <Zap size={18} color="#ff4081" />
@@ -151,7 +145,6 @@ const PatientDetails = () => {
                ) : <CircularProgress size={20} />}
             </Grid>
 
-            {/* Вплив категорій подій */}
             <Grid item xs={12}>
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1, mt: 2 }}>
                   <LayoutList size={18} color="#4caf50" />
@@ -167,7 +160,6 @@ const PatientDetails = () => {
           </Grid>
         </Grid>
 
-        {/* НОТАТКА ПРО КОНФІДЕНЦІЙНІСТЬ */}
         <Grid item xs={12}>
           <Card sx={{ borderRadius: '16px', p: 3, bgcolor: '#fff4e5', border: '1px solid #ffe2b3' }}>
              <Typography variant="body2" color="#663c00" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

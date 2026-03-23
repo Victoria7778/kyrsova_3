@@ -86,7 +86,7 @@ const History = () => {
 
   return (
     <Container maxWidth={false} sx={{ py: 3, height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* HEADER */}
+      
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 500, color: '#2c3e50' }}>Мій щоденник</Typography>
         <Chip 
@@ -97,7 +97,6 @@ const History = () => {
 
       <Grid container spacing={2} sx={{ flex: 1, minHeight: 0 }}>
         
-        {/* КОЛОНКА 1: КАЛЕНДАР ТА ПОДІЇ */}
         <Grid item xs={12} md={3.5} sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
           <Paper elevation={0} sx={{ p: 1.5, borderRadius: '24px', border: '1px solid #f1f4ff' }}>
             <Calendar onChange={setSelectedDate} value={selectedDate} tileContent={tileContent} locale="uk-UA" />
@@ -123,7 +122,6 @@ const History = () => {
           </Paper>
         </Grid>
 
-        {/* КОЛОНКА 2: ЖУРНАЛ НАСТРОЮ (ОНОВЛЕНО ФОН) */}
         <Grid item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <Paper elevation={0} sx={{ p: 3, height: '100%', borderRadius: '24px', display: 'flex', flexDirection: 'column', bgcolor: '#fff', border: '1px solid #f1f4ff', overflow: 'hidden' }}>
             <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2.5 }}>

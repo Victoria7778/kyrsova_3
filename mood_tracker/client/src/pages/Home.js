@@ -38,6 +38,7 @@ const Home = () => {
     if (!token) return;
     try {
       const today = new Date().toISOString().split('T')[0];
+      
       const [moodRes, sleepRes, physRes] = await Promise.all([
         axios.get('http://localhost:5000/api/mood/all', { headers: { Authorization: `Bearer ${token}` } }),
         axios.get('http://localhost:5000/api/mood/sleep/all', { headers: { Authorization: `Bearer ${token}` } }),
@@ -63,7 +64,6 @@ const Home = () => {
   const handleLogout = () => {
     localStorage.clear();
     navigate('/login');
- 
   };
 
   const handleSleepSubmit = async (e) => {
@@ -72,7 +72,7 @@ const Home = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       await axios.post('http://localhost:5000/api/mood/sleep', 
-        { date: today, hours: sleepHours }, 
+        { date: today, hours: Number(sleepHours) }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setModalType(null);
@@ -104,7 +104,6 @@ const Home = () => {
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, width: '100%', maxWidth: 1000, mx: 'auto', boxSizing: 'border-box' }}>
       
-      {/* HEADER */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5 }}>
         <Stack direction="row" spacing={2} alignItems="center">
           <Avatar sx={{ 
@@ -127,7 +126,6 @@ const Home = () => {
         </IconButton>
       </Box>
 
-      {/* STATUS CARDS */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {[
           { label: 'Настрій', val: todayMood ? `${todayMood.moodScore}/10` : '--', icon: <Activity size={20} />, col: '#9d8df1' },
@@ -138,7 +136,8 @@ const Home = () => {
             <Card sx={{ 
               borderRadius: '24px', textAlign: 'center', 
               boxShadow: '0 10px 30px rgba(157, 141, 241, 0.08)', 
-              border: '1px solid rgba(255,255,255,0.4)' 
+              border: '1px solid rgba(255,255,255,0.4)',
+              height: '100%'
             }}>
               <CardContent sx={{ py: 3 }}>
                 <Avatar sx={{ bgcolor: item.col, mx: 'auto', mb: 1.5, width: 44, height: 44, borderRadius: '12px' }}>
@@ -154,7 +153,6 @@ const Home = () => {
         ))}
       </Grid>
 
-      {/* BIG ACTION BUTTON */}
       <Box sx={{ mb: 4 }}>
         <Button 
           fullWidth
@@ -180,7 +178,6 @@ const Home = () => {
         </Button>
       </Box>
 
-      {/* QUICK ACTIONS */}
       <Grid container spacing={3}>
         {[
           { label: 'Записати сон', icon: <Moon size={22} />, type: 'sleep', col: '#b8aff5' },
@@ -209,7 +206,6 @@ const Home = () => {
         ))}
       </Grid>
 
-      {/* UNIVERSAL MODAL */}
       <Modal open={!!modalType} onClose={() => setModalType(null)} closeAfterTransition>
         <Fade in={!!modalType}>
           <Box sx={{

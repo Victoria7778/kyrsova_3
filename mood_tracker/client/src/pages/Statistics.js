@@ -63,7 +63,6 @@ const Statistics = () => {
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
       
-      {/* HEADER */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5, flexWrap: 'wrap', gap: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <TrendingUp color="#9d8df1" size={35} />
@@ -127,7 +126,6 @@ const Statistics = () => {
               </Box>
 
               <Grid container spacing={6}>
-                {/* 2. СОН (ШИРОКИЙ) */}
                 <Grid item xs={12}>
                   <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Moon size={20} color="#6a5acd" />
@@ -143,7 +141,6 @@ const Statistics = () => {
                   )}
                 </Grid>
 
-                {/* 3. ЕНЕРГІЯ (ШИРОКА) */}
                 <Grid item xs={12}>
                   <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Zap size={20} color="#ff4081" />

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const SleepSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  date: { type: String, required: true }, // Формат "YYYY-MM-DD" для унікальності за день
+  date: { type: String, required: true }, 
   hours: { type: Number, required: true },
   quality: { type: String, enum: ['good', 'fair', 'bad'] }
 });
